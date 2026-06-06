@@ -1,0 +1,9 @@
+allowBuilds:
+  "@parcel/watcher": true
+  core-js: true
+  es5-ext: true
+  meta-json-schema: true
+  sharp: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - dayjs@1.11.21

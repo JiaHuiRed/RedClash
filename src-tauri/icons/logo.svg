@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2D1B1E"/>
+      <stop offset="100%" stop-color="#1A1A2E"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect x="32" y="32" width="448" height="448" rx="96" ry="96" fill="url(#bg)"/>
+  <!-- Red accent bar -->
+  <rect x="96" y="96" width="320" height="16" rx="8" fill="#DE3C4B"/>
+  <!-- Lightning bolt (simplified) -->
+  <path d="M280 160 L200 280 L240 280 L220 360 L340 240 L290 240 L330 160 Z" fill="#FF4757"/>
+</svg>
