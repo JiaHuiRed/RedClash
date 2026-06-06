@@ -108,23 +108,42 @@
   }
 }
 
-.linux,
-.windows,
-.unknown {
-  &.layout {
-    .the_titlebar {
-      width: 100%;
-      display: flex;
-      justify-content: flex-end;
-      padding: 10px;
-      box-sizing: border-box;
-      height: 36px;
-      border-bottom: 1px solid var(--divider-color);
+// 统一 macOS 风格交通灯标题栏（所有平台都用同一套）
+.layout {
+  .the_titlebar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0;
+    box-sizing: border-box;
+    height: 36px;
+    border-bottom: 1px solid var(--titlebar-border, var(--divider-color));
+    // 毛玻璃：半透背景 + 背景模糊
+    background: var(--titlebar-bg, rgba(245, 245, 245, 0.72));
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
 
-      &-drag-region {
-        align-self: stretch;
-        flex: 1 1 auto;
-      }
+    &-drag-region {
+      align-self: stretch;
+      flex: 1 1 auto;
+      order: 1;
+    }
+  }
+
+  .layout-content__left {
+    padding-top: 5px;
+  }
+
+  .layout-content__right .the-content {
+    top: 5px;
+  }
+
+  .layout-content__left .the-newbtn {
+    right: 9px;
+    top: 2px;
+  }
+}
     }
 
     .layout-content__left .the-logo {

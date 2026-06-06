@@ -4,8 +4,8 @@ const OS = getSystem()
 export type ThemePalette = 'red' | 'blue' | 'green' | 'beige'
 
 export const themePalettes: { value: ThemePalette; label: string }[] = [
-  { value: 'red', label: 'Red' },
   { value: 'blue', label: 'DeepBlue' },
+  { value: 'red', label: 'Red' },
   { value: 'green', label: 'EyeCare' },
   { value: 'beige', label: 'Beige' },
 ]
@@ -141,8 +141,8 @@ export function getThemeByPalette(palette: ThemePalette, mode: 'light' | 'dark')
 }
 
 // Keep old defaultTheme / defaultDarkTheme exports for backward compat
-// (defaults to red palette, light mode)
-export const defaultTheme = red.light
-export const defaultDarkTheme = red.dark
+// (defaults to blue palette, light mode)
+export const defaultTheme = blue.light
+export const defaultDarkTheme = blue.dark
 
-export const defaultThemePalette: ThemePalette = 'red'
+export const defaultThemePalette: ThemePalette = 'blue'

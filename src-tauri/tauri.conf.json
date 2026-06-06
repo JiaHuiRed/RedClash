@@ -28,17 +28,6 @@
   "productName": "RedClash",
   "identifier": "io.github.QiuYeDeng.red-clash",
   "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQyOEMyRjBCQkVGOUJEREYKUldUZnZmbStDeStNMHU5Mmo1N24xQXZwSVRYbXA2NUpzZE5oVzlqeS9Bc0t6RVV4MmtwVjBZaHgK",
-      "endpoints": [
-        "https://update.hwdns.net/https://github.com/clash-verge-rev/clash-verge-rev/releases/download/updater/update-proxy.json",
-        "https://gh-proxy.org/https://github.com/clash-verge-rev/clash-verge-rev/releases/download/updater/update-proxy.json",
-        "https://github.com/clash-verge-rev/clash-verge-rev/releases/download/updater/update.json"
-      ],
-      "windows": {
-        "installMode": "passive"
-      }
-    },
     "deep-link": {
       "desktop": {
         "schemes": ["clash", "red-clash"]
@@ -46,6 +35,19 @@
     }
   },
   "app": {
+    "windows": [
+      {
+        "decorations": false,
+        "transparent": true,
+        "titleBarStyle": "Overlay",
+        "width": 1024,
+        "height": 720,
+        "minWidth": 800,
+        "minHeight": 540,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
     "security": {
       "capabilities": ["desktop-capability", "migrated"],
       "assetProtocol": {
