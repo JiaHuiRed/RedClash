@@ -87,7 +87,13 @@
     "appearance": {
       "light": "浅色",
       "dark": "深色",
-      "system": "系统"
+      "system": "系统",
+      "palettes": {
+        "red": "红色",
+        "blue": "深蓝",
+        "green": "护眼绿",
+        "beige": "米黄"
+      }
     },
     "clash": {
       "title": "Clash 设置",
@@ -162,6 +168,7 @@
         "fields": {
           "language": "语言设置",
           "themeMode": "主题模式",
+          "themePalette": "主题配色",
           "trayClickEvent": "托盘点击事件",
           "copyEnvType": "复制环境变量类型",
           "startPage": "启动页面",

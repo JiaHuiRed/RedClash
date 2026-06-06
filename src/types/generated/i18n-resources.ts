@@ -610,6 +610,7 @@ export interface TranslationResources {
               startPage: string
               startupScript: string
               themeMode: string
+              themePalette: string
               themeSetting: string
               trayClickEvent: string
             }
@@ -1073,6 +1074,12 @@ export interface TranslationResources {
         appearance: {
           dark: string
           light: string
+          palettes: {
+            beige: string
+            blue: string
+            green: string
+            red: string
+          }
           system: string
         }
         clash: {

@@ -905,6 +905,7 @@ interface IVergeConfig {
   start_page?: string
   clash_core?: string
   theme_mode?: 'light' | 'dark' | 'system'
+  theme_palette?: 'red' | 'blue' | 'green' | 'beige'
   traffic_graph?: boolean
   enable_memory_usage?: boolean
   enable_group_icon?: boolean

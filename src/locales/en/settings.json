@@ -87,7 +87,13 @@
     "appearance": {
       "light": "Light",
       "dark": "Dark",
-      "system": "System"
+      "system": "System",
+      "palettes": {
+        "red": "Red",
+        "blue": "Deep Blue",
+        "green": "Eye Care",
+        "beige": "Beige"
+      }
     },
     "clash": {
       "title": "Clash Setting",
@@ -162,6 +168,7 @@
         "fields": {
           "language": "Language",
           "themeMode": "Theme Mode",
+          "themePalette": "Theme Palette",
           "trayClickEvent": "Tray Click Event",
           "copyEnvType": "Copy Env Type",
           "startPage": "Start Page",

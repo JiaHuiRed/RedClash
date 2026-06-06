@@ -7,8 +7,8 @@ import { Theme as TauriOsTheme } from '@tauri-apps/api/window'
 import { useEffect, useMemo } from 'react'
 
 import { useVerge } from '@/hooks/use-verge'
-import { defaultDarkTheme, defaultTheme } from '@/pages/_theme'
-import { useSetThemeMode, useThemeMode } from '@/services/states'
+import { defaultDarkTheme, defaultTheme, defaultThemePalette, getThemeByPalette } from '@/pages/_theme'
+import { useSetThemeMode, useSetThemePalette, useThemeMode, useThemePalette } from '@/services/states'
 
 const CSS_INJECTION_SCOPE_ROOT = '[data-css-injection-root]'
 const CSS_INJECTION_SCOPE_LIMIT =
@@ -68,11 +68,19 @@ ${css}
 export const useCustomTheme = () => {
   const appWindow: WebviewWindow = useMemo(() => getCurrentWebviewWindow(), [])
   const { verge } = useVerge()
-  const { theme_mode, theme_setting } = verge ?? {}
+  const { theme_mode, theme_palette, theme_setting } = verge ?? {}
   const mode = useThemeMode()
   const setMode = useSetThemeMode()
+  const palette = useThemePalette() ?? defaultThemePalette
+  const setPalette = useSetThemePalette()
   const userBackgroundImage = theme_setting?.background_image || ''
   const hasUserBackground = !!userBackgroundImage
+
+  useEffect(() => {
+    if (theme_palette === 'red' || theme_palette === 'blue' || theme_palette === 'green' || theme_palette === 'beige') {
+      setPalette(theme_palette)
+    }
+  }, [theme_palette, setPalette])
 
   useEffect(() => {
     if (theme_mode === 'light' || theme_mode === 'dark') {
@@ -143,7 +151,7 @@ export const useCustomTheme = () => {
 
   const theme = useMemo(() => {
     const setting = theme_setting || {}
-    const dt = mode === 'light' ? defaultTheme : defaultDarkTheme
+    const dt = getThemeByPalette(palette, mode)
     let muiTheme: MuiTheme
 
     try {
@@ -310,7 +318,7 @@ export const useCustomTheme = () => {
     }
 
     return muiTheme
-  }, [mode, theme_setting, userBackgroundImage, hasUserBackground])
+  }, [mode, palette, theme_setting, userBackgroundImage, hasUserBackground])
 
   useEffect(() => {
     const id = setTimeout(() => {

@@ -39,6 +39,16 @@ export const resolveThemeMode = (
   return detectSystemTheme()
 }
 
+export const resolveThemePalette = (
+  vergeConfig?: IVergeConfig | null,
+): 'red' | 'blue' | 'green' | 'beige' => {
+  const palette = vergeConfig?.theme_palette
+  if (palette === 'red' || palette === 'blue' || palette === 'green' || palette === 'beige') {
+    return palette
+  }
+  return 'red'
+}
+
 export const setPreloadConfig = (config: IVergeConfig | null) => {
   vergeConfigCache = config
 }
@@ -102,5 +112,6 @@ export const preloadAppData = async () => {
     initializeLanguage(initialLanguage),
   ])
   const initialThemeMode = resolveThemeMode(config)
-  return { initialThemeMode }
+  const initialThemePalette = resolveThemePalette(config)
+  return { initialThemeMode, initialThemePalette }
 }

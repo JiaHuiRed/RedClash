@@ -1,31 +1,12 @@
 import sharp from 'sharp'
-import { readFileSync, writeFileSync, mkdirSync } from 'fs'
-import { resolve, dirname } from 'path'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, writeFileSync as wfs } from 'fs'
+import { execSync } from 'child_process'
+import { resolve } from 'path'
 
+const ICO_PATH = 'C:\\Users\\Administrator\\Pictures\\jiang.ico'
 const ICONS_DIR = resolve(import.meta.dirname, '..', 'src-tauri', 'icons')
 const ASSETS_DIR = resolve(import.meta.dirname, '..', 'src', 'assets', 'image')
-
-const LOGO_SVG = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#2D1B1E"/>
-      <stop offset="100%" stop-color="#1A1A2E"/>
-    </linearGradient>
-  </defs>
-  <!-- Rounded square background -->
-  <rect x="32" y="32" width="448" height="448" rx="96" ry="96" fill="url(#bg)"/>
-  <!-- Red accent bar -->
-  <rect x="96" y="96" width="320" height="16" rx="8" fill="#DE3C4B"/>
-  <!-- Lightning bolt (simplified) -->
-  <path d="M280 160 L200 280 L240 280 L220 360 L340 240 L290 240 L330 160 Z" fill="#FF4757"/>
-</svg>`
-
-// SVG for wordmark (logo.svg in assets)
-const WORDMARK_SVG = `<svg viewBox="0 0 240 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M12 8 L20 8 L32 36 L34 36 L46 8 L54 8 L36 48 L26 48 Z" fill="#FF4757"/>
-  <text x="68" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="700" fill="#E0E0E0">RedClash</text>
-</svg>`
+const WORK_DIR = resolve(import.meta.dirname, '..', '.icon-work')
 
 const ICON_SIZES = [
   { name: '32x32.png', size: 32 },
@@ -45,49 +26,94 @@ const ICON_SIZES = [
 ]
 
 async function generateIcons() {
+  if (!existsSync(ICO_PATH)) {
+    throw new Error(`Source ico not found: ${ICO_PATH}`)
+  }
+
   mkdirSync(ICONS_DIR, { recursive: true })
   mkdirSync(ASSETS_DIR, { recursive: true })
+  mkdirSync(WORK_DIR, { recursive: true })
 
-  // Generate app SVGs
-  writeFileSync(resolve(ASSETS_DIR, 'logo.svg'), WORDMARK_SVG, 'utf-8')
-  writeFileSync(resolve(ICONS_DIR, 'logo.svg'), LOGO_SVG, 'utf-8')
+  // 1) Pillow -> master PNG (1024x1024 with transparent bg)
+  const masterPng = resolve(WORK_DIR, 'jiang-1024.png')
+  execSync(
+    `python -c "from PIL import Image; im = Image.open(r'${ICO_PATH}').convert('RGBA'); im.resize((1024,1024), Image.LANCZOS).save(r'${masterPng}')"`,
+    { stdio: 'inherit' },
+  )
+  console.log(`  ✓ master PNG: ${masterPng}`)
 
-  // Generate PNGs at all sizes
+  const masterBuffer = readFileSync(masterPng)
+
+  // 2) sharp -> all Tauri sizes
   for (const { name, size } of ICON_SIZES) {
-    await sharp(Buffer.from(LOGO_SVG))
-      .resize(size, size)
+    await sharp(masterBuffer)
+      .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
       .png()
       .toFile(resolve(ICONS_DIR, name))
     console.log(`  ✓ ${name} (${size}x${size})`)
   }
 
-  // Generate icon.ico (multi-res ICO from various sizes)
-  const iconBuffer = await sharp(Buffer.from(LOGO_SVG))
-    .resize(256, 256)
-    .png()
-    .toBuffer()
+  // 3) wordmark (RedClash text logo for sidebar)
+  const wordmark = `<svg viewBox="0 0 240 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <text x="0" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="700" fill="currentColor">RedClash</text>
+</svg>`
+  writeFileSync(resolve(ASSETS_DIR, 'logo.svg'), wordmark, 'utf-8')
 
-  // For ICO we'll write a single 256px PNG as icon.ico (simplified approach)
-  // Tauri supports PNG as icon.ico on Windows
-  writeFileSync(resolve(ICONS_DIR, 'icon.ico'), iconBuffer)
-  console.log('  ✓ icon.ico')
-
-  // Generate tray icons (simplified - single color versions)
-  const traySvg = LOGO_SVG.replace('#FF4757', '#FFFFFF').replace('#DE3C4B', '#DE3C4B')
-  const trayMonoSvg = LOGO_SVG.replace('#FF4757', '#CCCCCC').replace('#DE3C4B', '#666666')
-
+  // 4) Tray icons - use small PNG of the same artwork
+  // tray icons are 16x16/32x32 - generate 32x32 monochrome + colored versions
   const trayNames = [
-    'tray-icon.ico', 'tray-icon-tun.ico', 'tray-icon-sys.ico',
-    'tray-icon-mono.ico', 'tray-icon-tun-mono.ico', 'tray-icon-sys-mono.ico',
-    'tray-icon-tun-mono-new.ico', 'tray-icon-sys-mono-new.ico',
+    { name: 'tray-icon.ico', mode: 'color' },
+    { name: 'tray-icon-mono.ico', mode: 'mono' },
+    { name: 'tray-icon-tun.ico', mode: 'color' },
+    { name: 'tray-icon-tun-mono.ico', mode: 'mono' },
+    { name: 'tray-icon-tun-mono-new.ico', mode: 'mono' },
+    { name: 'tray-icon-sys.ico', mode: 'color' },
+    { name: 'tray-icon-sys-mono.ico', mode: 'mono' },
+    { name: 'tray-icon-sys-mono-new.ico', mode: 'mono' },
   ]
-
-  for (const name of trayNames) {
-    const svg = name.includes('mono') ? trayMonoSvg : traySvg
-    const buf = await sharp(Buffer.from(svg)).resize(32, 32).png().toBuffer()
-    writeFileSync(resolve(ICONS_DIR, name), buf)
-    console.log(`  ✓ ${name}`)
+  // 4b) Tray icons - render to PNG buffer first, then use Pillow to write multi-size ICO
+  // (sharp 0.34 has no ICO encoder; we already have Pillow installed for reading the source)
+  // Use a Python script file (PowerShell escaping of -c arg is fragile on Windows)
+  const trayScriptPath = resolve(WORK_DIR, '_tray_icos.py')
+  const trayLines: string[] = ['from PIL import Image', `src = Image.open(r'${masterPng}').convert('RGBA')`]
+  for (const { name, mode } of trayNames) {
+    const targetPath = resolve(ICONS_DIR, name)
+    trayLines.push(`_im = src.resize((32, 32), Image.LANCZOS)`)
+    if (mode === 'mono') trayLines.push(`_im = _im.convert('LA').convert('RGBA')`)
+    trayLines.push(`_im.save(r'${targetPath}', format='ICO', sizes=[(16, 16), (32, 32)])`)
+    trayLines.push(`print('wrote ${targetPath}')`)
   }
+  wfs(trayScriptPath, trayLines.join('\n'))
+  execSync(`python "${trayScriptPath}"`, { stdio: 'inherit' })
+  for (const { name, mode } of trayNames) console.log(`  ✓ ${name} (${mode})`)
+
+  // 5) icon.ico - Tauri reads this as the .exe icon. Pillow writes a real multi-size ICO
+  // (Windows Resource Compiler needs format 3.00).
+  const icoPath = resolve(ICONS_DIR, 'icon.ico')
+  const iconScriptPath = resolve(WORK_DIR, '_main_ico.py')
+  wfs(
+    iconScriptPath,
+    [
+      'from PIL import Image',
+      `src = Image.open(r'${masterPng}').convert('RGBA')`,
+      `sizes = [16, 32, 48, 64, 128, 256]`,
+      `imgs = [src.resize((s, s), Image.LANCZOS) for s in sizes]`,
+      `imgs[0].save(r'${icoPath}', format='ICO', sizes=[(s, s) for s in sizes])`,
+      `print('wrote ${icoPath}')`,
+    ].join('\n'),
+  )
+  execSync(`python "${iconScriptPath}"`, { stdio: 'inherit' })
+  console.log('  ✓ icon.ico (multi-size proper ICO)')
+
+  // 6) Save the source PNG in assets for use in splash/UI
+  const sourcePng = resolve(ASSETS_DIR, 'icon.png')
+  writeFileSync(sourcePng, await sharp(masterBuffer).resize(512, 512).png().toBuffer())
+  console.log('  ✓ assets/icon.png')
+
+  console.log('\nDone.')
 }
 
-generateIcons().catch(console.error)
+generateIcons().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

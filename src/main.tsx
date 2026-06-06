@@ -16,12 +16,14 @@ import { FALLBACK_LANGUAGE, initializeLanguage } from './services/i18n'
 import {
   preloadAppData,
   resolveThemeMode,
+  resolveThemePalette,
   getPreloadConfig,
 } from './services/preload'
 import { queryClient } from './services/query-client'
 import {
   LoadingCacheProvider,
   ThemeModeProvider,
+  ThemePaletteProvider,
   UpdateStateProvider,
 } from './services/states'
 import { disableWebViewShortcuts } from './utils/disable-webview-shortcuts'
@@ -39,9 +41,10 @@ if (!container) {
 
 disableWebViewShortcuts()
 
-const initializeApp = (initialThemeMode: 'light' | 'dark') => {
+const initializeApp = (initialThemeMode: 'light' | 'dark', initialThemePalette: 'red' | 'blue' | 'green' | 'beige') => {
   const contexts = [
     <ThemeModeProvider key="theme" initialState={initialThemeMode} />,
+    <ThemePaletteProvider key="theme-palette" initialState={initialThemePalette} />,
     <LoadingCacheProvider key="loading" />,
     <UpdateStateProvider key="update" />,
   ]
@@ -65,8 +68,8 @@ const initializeApp = (initialThemeMode: 'light' | 'dark') => {
 }
 
 const bootstrap = async () => {
-  const { initialThemeMode } = await preloadAppData()
-  initializeApp(initialThemeMode)
+  const { initialThemeMode, initialThemePalette } = await preloadAppData()
+  initializeApp(initialThemeMode, initialThemePalette)
 }
 
 bootstrap().catch((error) => {
@@ -82,7 +85,7 @@ bootstrap().catch((error) => {
       )
     })
     .finally(() => {
-      initializeApp(resolveThemeMode(getPreloadConfig()))
+      initializeApp(resolveThemeMode(getPreloadConfig()), resolveThemePalette(getPreloadConfig()))
     })
 })
 

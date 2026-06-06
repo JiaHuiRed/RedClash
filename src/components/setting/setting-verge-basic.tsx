@@ -20,6 +20,7 @@ import { LayoutViewer } from './mods/layout-viewer'
 import { MiscViewer } from './mods/misc-viewer'
 import { SettingItem, SettingList } from './mods/setting-comp'
 import { ThemeModeSwitch } from './mods/theme-mode-switch'
+import { ThemePaletteSwitch } from './mods/theme-palette-switch'
 import { ThemeViewer } from './mods/theme-viewer'
 import { UpdateViewer } from './mods/update-viewer'
 
@@ -55,6 +56,7 @@ const SettingVergeBasic = ({ onError }: Props) => {
   const { verge, patchVerge, mutateVerge } = useVerge()
   const {
     theme_mode,
+    theme_palette,
     language,
     tray_event,
     env_type,
@@ -116,6 +118,19 @@ const SettingVergeBasic = ({ onError }: Props) => {
           onGuard={(e) => patchVerge({ theme_mode: e })}
         >
           <ThemeModeSwitch />
+        </GuardState>
+      </SettingItem>
+
+      <SettingItem
+        label={t('settings.components.verge.basic.fields.themePalette')}
+      >
+        <GuardState
+          value={theme_palette}
+          onCatch={onError}
+          onChange={(e) => onChangeData({ theme_palette: e })}
+          onGuard={(e) => patchVerge({ theme_palette: e })}
+        >
+          <ThemePaletteSwitch />
         </GuardState>
       </SettingItem>
 

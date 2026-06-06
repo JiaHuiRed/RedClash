@@ -1,47 +1,116 @@
 <h1 align="center">
   <img src="./src-tauri/icons/icon.png" alt="RedClash" width="128" />
   <br>
-  RedClash
+  <b>RedClash</b>
   <br>
 </h1>
 
-<h3 align="center">
-  个人定制的 Clash 桌面客户端 · 基于 <a href="https://github.com/clash-verge-rev/clash-verge-rev">clash-verge-rev</a>
-</h3>
-
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.0.1-red" alt="version" />
-  <img src="https://img.shields.io/badge/Windows-0078D6?logo=windows" alt="Windows" />
-  <img src="https://img.shields.io/github/license/clash-verge-rev/clash-verge-rev" alt="License" />
+  <i>哥哥自用的 Clash 桌面客户端 · 红黑主题 · Windows 优先</i>
 </p>
 
 <p align="center">
-  <a href="#特性">特性</a> ·
-  <a href="#致谢">致谢</a> ·
-  <a href="#许可">许可</a>
+  <a href="https://github.com/JiaHuiRed/RedClash/stargazers">
+    <img src="https://img.shields.io/github/stars/JiaHuiRed/RedClash?style=for-the-badge&color=red" alt="Stars" />
+  </a>
+  <a href="https://github.com/JiaHuiRed/RedClash/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/JiaHuiRed/RedClash?style=for-the-badge&color=blue" alt="License" />
+  </a>
+  <a href="https://github.com/JiaHuiRed/RedClash/releases">
+    <img src="https://img.shields.io/github/v/release/JiaHuiRed/RedClash?style=for-the-badge&color=green" alt="Release" />
+  </a>
+  <a href="https://github.com/JiaHuiRed/RedClash">
+    <img src="https://img.shields.io/badge/platform-Windows-0078D6?style=for-the-badge&logo=windows" alt="Platform" />
+  </a>
 </p>
 
-## 特性
+<p align="center">
+  <a href="#-特性">✨ 特性</a> ·
+  <a href="#-截图">📸 截图</a> ·
+  <a href="#-技术栈">🚀 技术栈</a> ·
+  <a href="#-开发">🛠️ 开发</a> ·
+  <a href="#-致谢">❤️ 致谢</a> ·
+  <a href="#-许可">📜 许可</a>
+</p>
 
-基于 clash-verge-rev v2.5.2 源码，做了以下调整：
+---
 
-- **品牌重塑**：Clash Verge Rev → RedClash，红黑主题配色
-- **Windows 优先**：个人自用，聚焦 Windows 平台体验
-- **保留原版全部功能**：订阅管理、代理切换、规则配置、TUN 模式等
+## ✨ 特性
 
-## 关于
+基于 [clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev) v2.5.2 二次开发，**只改品牌和配色 + 主题系统升级**：
 
-RedClash 是哥哥的 Clash 桌面客户端，从 clash-verge-rev 二次开发而来。
+- 🎨 **4 套主题配色** — 红色（默认）/ 深蓝 / 护眼绿 / 米黄
+- 🌗 **明暗双模式** — 默认深色启动，支持浅色 / 深色 / 跟随系统
+- 🪟 **Windows-only** — 去掉了 macOS / Linux 平台分支，专注 Windows
+- 🖼️ **全新图标** — 黑猫冰淇淋（Jiang 系列）
+- ⚡ **保留全部上游功能** — 订阅管理、代理切换、规则配置、TUN 模式、备份、WebDAV…
 
-当前版本 v0.0.1，仅做品牌和配色的初步定制。
+## 📸 截图
 
-## 致谢
+> 待补：v0.0.2 主题切换器截图
 
-- [clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev) — 上游项目
-- [Clash Verge](https://github.com/zzzgydi/clash-verge) — 原始项目
-- [Clash Meta / Mihomo](https://github.com/MetaCubeX/mihomo) — 代理核心
-- [Tauri](https://github.com/tauri-apps/tauri) — 桌面框架
+## 🚀 技术栈
 
-## 许可
+| 层级 | 选型 |
+| --- | --- |
+| 框架 | [Tauri 2](https://github.com/tauri-apps/tauri) |
+| 前端 | React 19 + TypeScript + Vite 7 |
+| UI | [MUI](https://github.com/mui/material-ui) |
+| 代理核心 | Mihomo（已集成在 sidecar）|
+| 包管理 | pnpm |
 
-[GNU General Public License v3.0](./LICENSE)
+## 🛠️ 开发
+
+### 环境要求
+
+- **Node.js** 18+
+- **pnpm** 9+
+- **Rust** 1.95+（项目固定 1.95，rust-toolchain.toml）
+- **Tauri** 系统依赖 → 见 [Tauri 官方文档](https://tauri.app/start/prerequisites/)
+
+### 启动开发
+
+```bash
+pnpm install
+pnpm run tauri dev
+```
+
+### 构建发行
+
+```bash
+pnpm run tauri build
+```
+
+构建产物在 `src-tauri/target/release/bundle/` 下。
+
+## 📦 项目结构
+
+```
+RedClash/
+├── src/                    # React 前端
+│   ├── pages/             # 页面
+│   │   ├── _theme.tsx     # 4 套主题色板
+│   │   └── _layout/       # 布局 hooks
+│   ├── components/setting/mods/
+│   │   ├── theme-mode-switch.tsx      # 浅/深/系统
+│   │   └── theme-palette-switch.tsx   # 4 套配色
+│   └── ...
+├── src-tauri/              # Rust 后端
+│   ├── src/config/verge.rs  # 主题配置 (theme_palette)
+│   └── ...
+└── script/
+    └── generate-icons.ts   # 图标生成脚本（jiang.ico → 各种尺寸）
+```
+
+## ❤️ 致谢
+
+| 项目 | 说明 |
+| --- | --- |
+| [clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev) | 上游项目，本项目基于 v2.5.2 |
+| [Clash Verge](https://github.com/zzzgydi/clash-verge) | 原始项目 |
+| [Mihomo](https://github.com/MetaCubeX/mihomo) | 代理核心 |
+| [Tauri](https://github.com/tauri-apps/tauri) | 桌面框架 |
+
+## 📜 许可
+
+本项目遵循 [GNU GPL v3.0](./LICENSE) 协议。

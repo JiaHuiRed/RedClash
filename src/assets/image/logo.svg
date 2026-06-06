@@ -1,4 +1,3 @@
 <svg viewBox="0 0 240 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M12 8 L20 8 L32 36 L34 36 L46 8 L54 8 L36 48 L26 48 Z" fill="#FF4757"/>
-  <text x="68" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="700" fill="#E0E0E0">RedClash</text>
+  <text x="0" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="700" fill="currentColor">RedClash</text>
 </svg>
