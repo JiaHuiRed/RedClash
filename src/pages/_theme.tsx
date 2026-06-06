@@ -26,7 +26,10 @@ const FONT_FAMILY = `-apple-system, BlinkMacSystemFont,"Microsoft YaHei UI", "Mi
   OS === 'windows' ? ', twemoji mozilla' : ''
 }`
 
-const buildTheme = (colors: ThemeColors) => ({ ...colors, font_family: FONT_FAMILY })
+const buildTheme = (colors: ThemeColors) => ({
+  ...colors,
+  font_family: FONT_FAMILY,
+})
 
 // 4 palettes × 2 modes
 
@@ -41,7 +44,7 @@ const red = {
     error_color: '#FF3B30',
     warning_color: '#FF9500',
     success_color: '#06943D',
-    background_color: '#F5F5F5',
+    background_color: '#F5E8E8',
   }),
   dark: buildTheme({
     primary_color: '#FF4757',
@@ -52,7 +55,7 @@ const red = {
     error_color: '#FF453A',
     warning_color: '#FF9F0A',
     success_color: '#30D158',
-    background_color: '#1A1A2E',
+    background_color: '#2A1418',
   }),
 }
 
@@ -136,7 +139,10 @@ const beige = {
 
 const allPalettes = { red, blue, green, beige }
 
-export function getThemeByPalette(palette: ThemePalette, mode: 'light' | 'dark') {
+export function getThemeByPalette(
+  palette: ThemePalette,
+  mode: 'light' | 'dark',
+) {
   return allPalettes[palette][mode]
 }
 

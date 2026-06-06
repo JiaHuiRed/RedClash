@@ -1,5 +1,5 @@
 {
-  "version": "0.0.2",
+  "version": "0.0.4",
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "bundle": {
     "active": true,
@@ -15,8 +15,7 @@
     "externalBin": ["sidecar/verge-mihomo", "sidecar/verge-mihomo-alpha"],
     "copyright": "Copyright (C) 2025 QiuYeDeng. GNU GPL v3.0.",
     "category": "DeveloperTool",
-    "shortDescription": "RedClash",
-    "createUpdaterArtifacts": true
+    "shortDescription": "RedClash"
   },
   "build": {
     "beforeBuildCommand": "pnpm run web:build",
@@ -39,7 +38,6 @@
       {
         "decorations": false,
         "transparent": true,
-        "titleBarStyle": "Overlay",
         "width": 1024,
         "height": 720,
         "minWidth": 800,

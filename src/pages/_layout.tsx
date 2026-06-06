@@ -12,30 +12,18 @@ import {
   useSortable,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import {
-  Box,
-  List,
-  Menu,
-  MenuItem,
-  Paper,
-  SvgIcon,
-  ThemeProvider,
-} from '@mui/material'
+import { Box, List, Menu, MenuItem, Paper, ThemeProvider } from '@mui/material'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import type { CSSProperties } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet, useLocation, useNavigate } from 'react-router'
+import { Outlet } from 'react-router'
 
-import iconDark from '@/assets/image/icon_dark.svg?react'
-import iconLight from '@/assets/image/icon_light.svg?react'
 import LogoSvg from '@/assets/image/logo.svg?react'
 import { BaseErrorBoundary } from '@/components/base'
 import { LayoutItem } from '@/components/layout/layout-item'
 import { LayoutTraffic } from '@/components/layout/layout-traffic'
-import { NoticeManager } from '@/components/layout/notice-manager'
-import { UpdateButton } from '@/components/layout/update-button'
 import { WindowControls } from '@/components/layout/window-controller'
 import { useI18n } from '@/hooks/use-i18n'
 import { useVerge } from '@/hooks/use-verge'
@@ -49,11 +37,8 @@ import {
   useLoadingOverlay,
   useNavMenuOrder,
 } from './_layout/hooks'
-import { handleNoticeMessage } from './_layout/utils'
 import { navItems } from './_routers'
-import LogsPage from './logs'
 
-import 'dayjs/locale/ru'
 import 'dayjs/locale/zh-cn'
 
 export const portableFlag = false
@@ -118,9 +103,6 @@ const Layout = () => {
   const { language } = verge ?? {}
   const navCollapsed = verge?.collapse_navbar ?? false
   const { switchLanguage } = useI18n()
-  const navigate = useNavigate()
-  const { pathname } = useLocation()
-  const isLogsPage = pathname === '/logs'
   const themeReady = useMemo(() => Boolean(theme), [theme])
 
   const [menuUnlocked, setMenuUnlocked] = useState(false)
@@ -205,7 +187,7 @@ const Layout = () => {
 
   const customTitlebar = useMemo(
     () =>
-      !decorated ? (
+      decorated !== true ? (
         <div className="the_titlebar">
           <div
             className="the_titlebar-drag-region"
@@ -218,20 +200,7 @@ const Layout = () => {
   )
 
   useLoadingOverlay(themeReady)
-
-  const handleNotice = useCallback(
-    (payload: [string, string]) => {
-      const [status, msg] = payload
-      try {
-        handleNoticeMessage(status, msg, t, navigate)
-      } catch (error) {
-        console.error('[通知处理] 失败:', error)
-      }
-    },
-    [t, navigate],
-  )
-
-  useLayoutEvents(handleNotice)
+  useLayoutEvents()
 
   useEffect(() => {
     if (language) {
@@ -260,7 +229,6 @@ const Layout = () => {
   return (
     <ThemeProvider theme={theme}>
       {/* 左侧底部窗口控制按钮 */}
-      <NoticeManager position={verge?.notice_position} />
       <div
         style={{
           animation: 'fadeIn 0.5s',
@@ -319,20 +287,8 @@ const Layout = () => {
                   justifyContent: 'space-between',
                 }}
               >
-                <SvgIcon
-                  component={isDark ? iconDark : iconLight}
-                  style={{
-                    height: '36px',
-                    width: '36px',
-                    marginTop: '-3px',
-                    marginRight: '5px',
-                    marginLeft: '-3px',
-                  }}
-                  inheritViewBox
-                />
                 <LogoSvg fill={isDark ? 'white' : 'black'} />
               </div>
-              <UpdateButton className="the-newbtn" />
             </div>
 
             {menuUnlocked && (
@@ -453,19 +409,6 @@ const Layout = () => {
               <BaseErrorBoundary>
                 <Outlet />
               </BaseErrorBoundary>
-              {isLogsPage && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                  }}
-                >
-                  <LogsPage />
-                </div>
-              )}
             </div>
           </div>
         </div>

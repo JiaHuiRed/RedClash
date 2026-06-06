@@ -72,15 +72,14 @@ export const WindowProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [currentWindow])
 
   const toggleDecorations = useCallback(async () => {
-    const currentVal = await currentWindow.isDecorated()
-    await currentWindow.setDecorations(!currentVal)
-    setDecorated(!currentVal)
-  }, [currentWindow])
+    // No-op: RedClash always uses the custom macOS-style titlebar.
+    // Kept as a no-op to preserve the WindowContext API surface
+    // for any future experimental toggles.
+  }, [])
 
   useEffect(() => {
-    refreshDecorated()
     currentWindow.setMinimizable?.(true)
-  }, [currentWindow, refreshDecorated])
+  }, [currentWindow])
 
   const contextValue = useMemo(
     () => ({

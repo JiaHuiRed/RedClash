@@ -21,7 +21,7 @@ const MINIMAL_HEIGHT: f64 = 520.0;
 #[cfg(target_os = "linux")]
 const DEFAULT_DECORATIONS: bool = false;
 #[cfg(not(target_os = "linux"))]
-const DEFAULT_DECORATIONS: bool = true;
+const DEFAULT_DECORATIONS: bool = false;
 
 /// 构建新的 WebView 窗口
 pub async fn build_new_window() -> Result<WebviewWindow, String> {
