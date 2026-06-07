@@ -11,6 +11,7 @@
 ### 🐞 修复问题
 
 - **修复潜在的内存泄漏**：`profile-item.tsx` 中事件监听器的清理逻辑优化
+- **修复 LLM API 通过代理时 SSE 长连接超时**：国内 API（DeepSeek、MiMo）被 `MATCH` 规则误转发到代理节点，导致流式响应中断。在规则中显式添加 `DOMAIN,api.deepseek.com,DIRECT` 等直连规则
 
 ## v0.0.4 (2026-06-06)
 
