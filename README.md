@@ -16,8 +16,8 @@
   <a href="https://github.com/JiaHuiRed/RedClash/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/JiaHuiRed/RedClash?style=for-the-badge&color=blue" alt="License" />
   </a>
-  <a href="https://github.com/JiaHuiRed/RedClash/releases">
-    <img src="https://img.shields.io/github/v/release/JiaHuiRed/RedClash?style=for-the-badge&color=green" alt="Release" />
+  <a href="./Changelog.md">
+    <img src="https://img.shields.io/github/package-json/v/JiaHuiRed/RedClash?style=for-the-badge&color=green" alt="Release" />
   </a>
   <a href="https://github.com/JiaHuiRed/RedClash">
     <img src="https://img.shields.io/badge/platform-Windows-0078D6?style=for-the-badge&logo=windows" alt="Platform" />
@@ -29,6 +29,7 @@
   <a href="#-截图">📸 截图</a> ·
   <a href="#-技术栈">🚀 技术栈</a> ·
   <a href="#-开发">🛠️ 开发</a> ·
+  <a href="./Changelog.md">📋 更新日志</a> ·
   <a href="#-致谢">❤️ 致谢</a> ·
   <a href="#-许可">📜 许可</a>
 </p>
