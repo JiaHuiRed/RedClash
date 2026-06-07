@@ -26,7 +26,6 @@
 
 <p align="center">
   <a href="#-特性">✨ 特性</a> ·
-  <a href="#-截图">📸 截图</a> ·
   <a href="#-技术栈">🚀 技术栈</a> ·
   <a href="#-开发">🛠️ 开发</a> ·
   <a href="./Changelog.md">📋 更新日志</a> ·
@@ -38,24 +37,23 @@
 
 ## ✨ 特性
 
-基于 [clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev) v2.5.2 二次开发，**只改品牌和配色 + 主题系统升级**：
+基于 [clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev) v2.5.2 深度定制：
 
-- 🎨 **4 套主题配色** — 红色（默认）/ 深蓝 / 护眼绿 / 米黄
+- 🎨 **4 套主题配色** — 红色 / 深蓝（默认）/ 护眼绿 / 米黄
 - 🌗 **明暗双模式** — 默认深色启动，支持浅色 / 深色 / 跟随系统
-- 🪟 **Windows-only** — 去掉了 macOS / Linux 平台分支，专注 Windows
+- 🪟 **macOS 风格窗口** — 交通灯（红/黄/绿）+ 毛玻璃标题栏，所有平台统一
+- 🪟 **Windows-only** — 精简掉 macOS / Linux 平台代码，专注 Windows
 - 🖼️ **全新图标** — 黑猫冰淇淋（Jiang 系列）
-- ⚡ **保留全部上游功能** — 订阅管理、代理切换、规则配置、TUN 模式、备份、WebDAV…
-
-## 📸 截图
-
-> 待补：v0.0.2 主题切换器截图
+- ⚡ **保留核心功能** — 订阅管理、代理切换、规则配置、TUN 模式、备份、WebDAV
+- 🧹 **精简界面** — 移除未使用的页面（连接/首页/日志/规则/测试/解锁），只保留代理/配置/设置
+- 🌐 **中文优先** — 只保留中文语言包，减少包体体积
 
 ## 🚀 技术栈
 
 | 层级 | 选型 |
 | --- | --- |
 | 框架 | [Tauri 2](https://github.com/tauri-apps/tauri) |
-| 前端 | React 19 + TypeScript + Vite 7 |
+| 前端 | React 19 + TypeScript + Vite |
 | UI | [MUI](https://github.com/mui/material-ui) |
 | 代理核心 | Mihomo（已集成在 sidecar）|
 | 包管理 | pnpm |
@@ -66,7 +64,7 @@
 
 - **Node.js** 18+
 - **pnpm** 9+
-- **Rust** 1.95+（项目固定 1.95，rust-toolchain.toml）
+- **Rust** 1.95+（项目固定版本，见 `rust-toolchain.toml`）
 - **Tauri** 系统依赖 → 见 [Tauri 官方文档](https://tauri.app/start/prerequisites/)
 
 ### 启动开发
@@ -89,8 +87,8 @@ pnpm run tauri build
 ```
 RedClash/
 ├── src/                    # React 前端
-│   ├── pages/             # 页面
-│   │   ├── _theme.tsx     # 4 套主题色板
+│   ├── pages/             # 页面（代理/配置/设置）
+│   │   ├── _theme.tsx     # 4 套主题色板定义
 │   │   └── _layout/       # 布局 hooks
 │   ├── components/setting/mods/
 │   │   ├── theme-mode-switch.tsx      # 浅/深/系统
