@@ -449,24 +449,10 @@ export const ProfileItem = (props: Props) => {
     delete: 'shared.actions.delete',
   } as const
 
-  const urlModeMenu: ContextMenuItem[] = [
-    ...(hasHome
-      ? [
-          {
-            label: menuLabels.home,
-            handler: onOpenHome,
-            disabled: false,
-          } satisfies ContextMenuItem,
-        ]
-      : []),
+  const sharedMenuItems: ContextMenuItem[] = [
     {
       label: menuLabels.select,
       handler: onForceSelect,
-      disabled: false,
-    },
-    {
-      label: menuLabels.shareQrCode,
-      handler: onShareQrCode,
       disabled: false,
     },
     {
@@ -507,6 +493,40 @@ export const ProfileItem = (props: Props) => {
     {
       label: menuLabels.openFile,
       handler: onOpenFile,
+      disabled: false,
+    },
+  ]
+
+  const deleteMenuItem: ContextMenuItem = {
+    label: menuLabels.delete,
+    handler: () => {
+      setAnchorEl(null)
+      if (batchMode) {
+        // If in batch mode, just toggle selection instead of showing delete confirmation
+        if (onSelectionChange) {
+          onSelectionChange()
+        }
+      } else {
+        setConfirmOpen(true)
+      }
+    },
+    disabled: false,
+  }
+
+  const urlModeMenu: ContextMenuItem[] = [
+    ...(hasHome
+      ? [
+          {
+            label: menuLabels.home,
+            handler: onOpenHome,
+            disabled: false,
+          } satisfies ContextMenuItem,
+        ]
+      : []),
+    ...sharedMenuItems,
+    {
+      label: menuLabels.shareQrCode,
+      handler: onShareQrCode,
       disabled: false,
     },
     {
@@ -519,84 +539,9 @@ export const ProfileItem = (props: Props) => {
       handler: () => onUpdate(2),
       disabled: false,
     },
-    {
-      label: menuLabels.delete,
-      handler: () => {
-        setAnchorEl(null)
-        if (batchMode) {
-          // If in batch mode, just toggle selection instead of showing delete confirmation
-          if (onSelectionChange) {
-            onSelectionChange()
-          }
-        } else {
-          setConfirmOpen(true)
-        }
-      },
-      disabled: false,
-    },
+    deleteMenuItem,
   ]
-  const fileModeMenu: ContextMenuItem[] = [
-    {
-      label: menuLabels.select,
-      handler: onForceSelect,
-      disabled: false,
-    },
-    {
-      label: menuLabels.editInfo,
-      handler: onEditInfo,
-      disabled: false,
-    },
-    {
-      label: menuLabels.editFile,
-      handler: onEditFile,
-      disabled: false,
-    },
-    {
-      label: menuLabels.editRules,
-      handler: onEditRules,
-      disabled: !option?.rules,
-    },
-    {
-      label: menuLabels.editProxies,
-      handler: onEditProxies,
-      disabled: !option?.proxies,
-    },
-    {
-      label: menuLabels.editGroups,
-      handler: onEditGroups,
-      disabled: !option?.groups,
-    },
-    {
-      label: menuLabels.extendConfig,
-      handler: onEditMerge,
-      disabled: !option?.merge,
-    },
-    {
-      label: menuLabels.extendScript,
-      handler: onEditScript,
-      disabled: !option?.script,
-    },
-    {
-      label: menuLabels.openFile,
-      handler: onOpenFile,
-      disabled: false,
-    },
-    {
-      label: menuLabels.delete,
-      handler: () => {
-        setAnchorEl(null)
-        if (batchMode) {
-          // If in batch mode, just toggle selection instead of showing delete confirmation
-          if (onSelectionChange) {
-            onSelectionChange()
-          }
-        } else {
-          setConfirmOpen(true)
-        }
-      },
-      disabled: false,
-    },
-  ]
+  const fileModeMenu: ContextMenuItem[] = [...sharedMenuItems, deleteMenuItem]
 
   const boxStyle = {
     height: 26,

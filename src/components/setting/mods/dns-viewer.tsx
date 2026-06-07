@@ -181,6 +181,99 @@ const DEFAULT_DNS_CONFIG = {
   },
 }
 
+type DnsFormState = {
+  enable: boolean
+  listen: string
+  enhancedMode: 'fake-ip' | 'redir-host'
+  fakeIpRange: string
+  fakeIpFilterMode: 'blacklist' | 'whitelist'
+  preferH3: boolean
+  respectRules: boolean
+  useHosts: boolean
+  useSystemHosts: boolean
+  ipv6: boolean
+  fakeIpFilter: string
+  nameserver: string
+  fallback: string
+  defaultNameserver: string
+  proxyServerNameserver: string
+  directNameserver: string
+  directNameserverFollowPolicy: boolean
+  fallbackGeoip: boolean
+  fallbackGeoipCode: string
+  fallbackIpcidr: string
+  fallbackDomain: string
+  nameserverPolicy: string
+  hosts: string
+}
+
+function configToFormState(
+  config: { dns?: Record<string, any>; hosts?: Record<string, any> } | null,
+): DnsFormState {
+  const dns = config?.dns || {}
+
+  const enhancedMode =
+    dns['enhanced-mode'] || DEFAULT_DNS_CONFIG['enhanced-mode']
+  const validEnhancedMode =
+    enhancedMode === 'fake-ip' || enhancedMode === 'redir-host'
+      ? enhancedMode
+      : DEFAULT_DNS_CONFIG['enhanced-mode']
+
+  const fakeIpFilterMode =
+    dns['fake-ip-filter-mode'] || DEFAULT_DNS_CONFIG['fake-ip-filter-mode']
+  const validFakeIpFilterMode =
+    fakeIpFilterMode === 'blacklist' || fakeIpFilterMode === 'whitelist'
+      ? fakeIpFilterMode
+      : DEFAULT_DNS_CONFIG['fake-ip-filter-mode']
+
+  return {
+    enable: dns.enable ?? DEFAULT_DNS_CONFIG.enable,
+    listen: dns.listen ?? DEFAULT_DNS_CONFIG.listen,
+    enhancedMode: validEnhancedMode,
+    fakeIpRange: dns['fake-ip-range'] ?? DEFAULT_DNS_CONFIG['fake-ip-range'],
+    fakeIpFilterMode: validFakeIpFilterMode,
+    preferH3: dns['prefer-h3'] ?? DEFAULT_DNS_CONFIG['prefer-h3'],
+    respectRules: dns['respect-rules'] ?? DEFAULT_DNS_CONFIG['respect-rules'],
+    useHosts: dns['use-hosts'] ?? DEFAULT_DNS_CONFIG['use-hosts'],
+    useSystemHosts:
+      dns['use-system-hosts'] ?? DEFAULT_DNS_CONFIG['use-system-hosts'],
+    ipv6: dns.ipv6 ?? DEFAULT_DNS_CONFIG.ipv6,
+    fakeIpFilter:
+      dns['fake-ip-filter']?.join(', ') ??
+      DEFAULT_DNS_CONFIG['fake-ip-filter'].join(', '),
+    nameserver:
+      dns.nameserver?.join(', ') ?? DEFAULT_DNS_CONFIG.nameserver.join(', '),
+    fallback:
+      dns.fallback?.join(', ') ?? DEFAULT_DNS_CONFIG.fallback.join(', '),
+    defaultNameserver:
+      dns['default-nameserver']?.join(', ') ??
+      DEFAULT_DNS_CONFIG['default-nameserver'].join(', '),
+    proxyServerNameserver:
+      dns['proxy-server-nameserver']?.join(', ') ??
+      (DEFAULT_DNS_CONFIG['proxy-server-nameserver']?.join(', ') || ''),
+    directNameserver:
+      dns['direct-nameserver']?.join(', ') ??
+      (DEFAULT_DNS_CONFIG['direct-nameserver']?.join(', ') || ''),
+    directNameserverFollowPolicy:
+      dns['direct-nameserver-follow-policy'] ??
+      DEFAULT_DNS_CONFIG['direct-nameserver-follow-policy'],
+    fallbackGeoip:
+      dns['fallback-filter']?.geoip ??
+      DEFAULT_DNS_CONFIG['fallback-filter'].geoip,
+    fallbackGeoipCode:
+      dns['fallback-filter']?.['geoip-code'] ??
+      DEFAULT_DNS_CONFIG['fallback-filter']['geoip-code'],
+    fallbackIpcidr:
+      dns['fallback-filter']?.ipcidr?.join(', ') ??
+      DEFAULT_DNS_CONFIG['fallback-filter'].ipcidr.join(', '),
+    fallbackDomain:
+      dns['fallback-filter']?.domain?.join(', ') ??
+      DEFAULT_DNS_CONFIG['fallback-filter'].domain.join(', '),
+    nameserverPolicy: '',
+    hosts: '',
+  }
+}
+
 export function DnsViewer({ ref }: { ref?: Ref<DialogRef> }) {
   const { t } = useTranslation()
   const { clash, mutateClash } = useClash()
@@ -255,74 +348,13 @@ export function DnsViewer({ ref }: { ref?: Ref<DialogRef> }) {
     (config: any) => {
       if (!config) return
 
-      const dnsConfig = config.dns || {}
+      const formState = configToFormState(config)
       const hostsConfig = config.hosts || {}
 
-      const enhancedMode =
-        dnsConfig['enhanced-mode'] || DEFAULT_DNS_CONFIG['enhanced-mode']
-      const validEnhancedMode =
-        enhancedMode === 'fake-ip' || enhancedMode === 'redir-host'
-          ? enhancedMode
-          : DEFAULT_DNS_CONFIG['enhanced-mode']
-
-      const fakeIpFilterMode =
-        dnsConfig['fake-ip-filter-mode'] ||
-        DEFAULT_DNS_CONFIG['fake-ip-filter-mode']
-      const validFakeIpFilterMode =
-        fakeIpFilterMode === 'blacklist' || fakeIpFilterMode === 'whitelist'
-          ? fakeIpFilterMode
-          : DEFAULT_DNS_CONFIG['fake-ip-filter-mode']
-
       setValues({
-        enable: dnsConfig.enable ?? DEFAULT_DNS_CONFIG.enable,
-        listen: dnsConfig.listen ?? DEFAULT_DNS_CONFIG.listen,
-        enhancedMode: validEnhancedMode,
-        fakeIpRange:
-          dnsConfig['fake-ip-range'] ?? DEFAULT_DNS_CONFIG['fake-ip-range'],
-        fakeIpFilterMode: validFakeIpFilterMode,
-        preferH3: dnsConfig['prefer-h3'] ?? DEFAULT_DNS_CONFIG['prefer-h3'],
-        respectRules:
-          dnsConfig['respect-rules'] ?? DEFAULT_DNS_CONFIG['respect-rules'],
-        useHosts: dnsConfig['use-hosts'] ?? DEFAULT_DNS_CONFIG['use-hosts'],
-        useSystemHosts:
-          dnsConfig['use-system-hosts'] ??
-          DEFAULT_DNS_CONFIG['use-system-hosts'],
-        ipv6: dnsConfig.ipv6 ?? DEFAULT_DNS_CONFIG.ipv6,
-        fakeIpFilter:
-          dnsConfig['fake-ip-filter']?.join(', ') ??
-          DEFAULT_DNS_CONFIG['fake-ip-filter'].join(', '),
-        nameserver:
-          dnsConfig.nameserver?.join(', ') ??
-          DEFAULT_DNS_CONFIG.nameserver.join(', '),
-        fallback:
-          dnsConfig.fallback?.join(', ') ??
-          DEFAULT_DNS_CONFIG.fallback.join(', '),
-        defaultNameserver:
-          dnsConfig['default-nameserver']?.join(', ') ??
-          DEFAULT_DNS_CONFIG['default-nameserver'].join(', '),
-        proxyServerNameserver:
-          dnsConfig['proxy-server-nameserver']?.join(', ') ??
-          (DEFAULT_DNS_CONFIG['proxy-server-nameserver']?.join(', ') || ''),
-        directNameserver:
-          dnsConfig['direct-nameserver']?.join(', ') ??
-          (DEFAULT_DNS_CONFIG['direct-nameserver']?.join(', ') || ''),
-        directNameserverFollowPolicy:
-          dnsConfig['direct-nameserver-follow-policy'] ??
-          DEFAULT_DNS_CONFIG['direct-nameserver-follow-policy'],
-        fallbackGeoip:
-          dnsConfig['fallback-filter']?.geoip ??
-          DEFAULT_DNS_CONFIG['fallback-filter'].geoip,
-        fallbackGeoipCode:
-          dnsConfig['fallback-filter']?.['geoip-code'] ??
-          DEFAULT_DNS_CONFIG['fallback-filter']['geoip-code'],
-        fallbackIpcidr:
-          dnsConfig['fallback-filter']?.ipcidr?.join(', ') ??
-          DEFAULT_DNS_CONFIG['fallback-filter'].ipcidr.join(', '),
-        fallbackDomain:
-          dnsConfig['fallback-filter']?.domain?.join(', ') ??
-          DEFAULT_DNS_CONFIG['fallback-filter'].domain.join(', '),
+        ...formState,
         nameserverPolicy:
-          formatNameserverPolicy(dnsConfig['nameserver-policy']) || '',
+          formatNameserverPolicy(config.dns?.['nameserver-policy']) || '',
         hosts: formatHosts(hostsConfig) || '',
       })
     },
@@ -383,37 +415,7 @@ export function DnsViewer({ ref }: { ref?: Ref<DialogRef> }) {
 
   // 重置为默认值
   const resetToDefaults = useCallback(() => {
-    setValues({
-      enable: DEFAULT_DNS_CONFIG.enable,
-      listen: DEFAULT_DNS_CONFIG.listen,
-      enhancedMode: DEFAULT_DNS_CONFIG['enhanced-mode'],
-      fakeIpRange: DEFAULT_DNS_CONFIG['fake-ip-range'],
-      fakeIpFilterMode: DEFAULT_DNS_CONFIG['fake-ip-filter-mode'],
-      preferH3: DEFAULT_DNS_CONFIG['prefer-h3'],
-      respectRules: DEFAULT_DNS_CONFIG['respect-rules'],
-      useHosts: DEFAULT_DNS_CONFIG['use-hosts'],
-      useSystemHosts: DEFAULT_DNS_CONFIG['use-system-hosts'],
-      ipv6: DEFAULT_DNS_CONFIG.ipv6,
-      fakeIpFilter: DEFAULT_DNS_CONFIG['fake-ip-filter'].join(', '),
-      defaultNameserver: DEFAULT_DNS_CONFIG['default-nameserver'].join(', '),
-      nameserver: DEFAULT_DNS_CONFIG.nameserver.join(', '),
-      fallback: DEFAULT_DNS_CONFIG.fallback.join(', '),
-      proxyServerNameserver:
-        DEFAULT_DNS_CONFIG['proxy-server-nameserver']?.join(', ') || '',
-      directNameserver:
-        DEFAULT_DNS_CONFIG['direct-nameserver']?.join(', ') || '',
-      directNameserverFollowPolicy:
-        DEFAULT_DNS_CONFIG['direct-nameserver-follow-policy'] || false,
-      fallbackGeoip: DEFAULT_DNS_CONFIG['fallback-filter'].geoip,
-      fallbackGeoipCode: DEFAULT_DNS_CONFIG['fallback-filter']['geoip-code'],
-      fallbackIpcidr:
-        DEFAULT_DNS_CONFIG['fallback-filter'].ipcidr?.join(', ') || '',
-      fallbackDomain:
-        DEFAULT_DNS_CONFIG['fallback-filter'].domain?.join(', ') || '',
-      nameserverPolicy: '',
-      hosts: '',
-    })
-
+    setValues(configToFormState(null))
     updateYamlFromValues()
   }, [setValues, updateYamlFromValues])
 
