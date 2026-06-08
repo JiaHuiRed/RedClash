@@ -262,7 +262,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         uses: actions/attest-build-provenance@v4
         with:
-          subject-path: target/${{ matrix.target }}/release/bundle/nsis/*setup*
+          subject-path: target/${{ matrix.target }}/release/bundle/msi/*.msi*
 
       - name: Attest macOS bundles
         if: matrix.os == 'macos-latest'
@@ -506,28 +506,28 @@ jobs:
 
       - name: Rename
         run: |
-          $files = Get-ChildItem ".\target\${{ matrix.target }}\release\bundle\nsis\*-setup.exe"
+          $files = Get-ChildItem ".\target\${{ matrix.target }}\release\bundle\msi\*.msi"
           foreach ($file in $files) {
-            $newName = $file.Name -replace "-setup\.exe$", "_fixed_webview2-setup.exe"
+            $newName = $file.Name -replace "\.msi$", "_fixed_webview2.msi"
             Rename-Item $file.FullName $newName
           }
 
-          $files = Get-ChildItem ".\target\${{ matrix.target }}\release\bundle\nsis\*.nsis.zip"
+          $files = Get-ChildItem ".\target\${{ matrix.target }}\release\bundle\msi\*.msi.zip"
           foreach ($file in $files) {
-            $newName = $file.Name -replace "-setup\.nsis\.zip$", "_fixed_webview2-setup.nsis.zip"
+            $newName = $file.Name -replace "\.msi\.zip$", "_fixed_webview2.msi.zip"
             Rename-Item $file.FullName $newName
           }
 
-          $files = Get-ChildItem ".\target\${{ matrix.target }}\release\bundle\nsis\*-setup.exe.sig"
+          $files = Get-ChildItem ".\target\${{ matrix.target }}\release\bundle\msi\*.msi.zip.sig"
           foreach ($file in $files) {
-            $newName = $file.Name -replace "-setup\.exe\.sig$", "_fixed_webview2-setup.exe.sig"
+            $newName = $file.Name -replace "\.msi\.zip\.sig$", "_fixed_webview2.msi.zip.sig"
             Rename-Item $file.FullName $newName
           }
 
       - name: Attest Windows bundles
         uses: actions/attest-build-provenance@v4
         with:
-          subject-path: target/${{ matrix.target }}/release/bundle/nsis/*setup*
+          subject-path: target/${{ matrix.target }}/release/bundle/msi/*.msi*
 
       - name: Upload Release
         uses: softprops/action-gh-release@v3
@@ -538,7 +538,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           prerelease: ${{ contains(github.ref_name, '-rc') }}
-          files: target/${{ matrix.target }}/release/bundle/nsis/*setup*
+          files: target/${{ matrix.target }}/release/bundle/msi/*.msi*
 
       - name: Portable Bundle
         run: pnpm portable-fixed-webview2 ${{ matrix.target }}

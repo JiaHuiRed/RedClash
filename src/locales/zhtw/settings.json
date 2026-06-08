@@ -87,7 +87,13 @@
     "appearance": {
       "light": "淺色",
       "dark": "深色",
-      "system": "系統"
+      "system": "系統",
+      "palettes": {
+        "red": "Red",
+        "blue": "Deep Blue",
+        "green": "Eye Care",
+        "beige": "Beige"
+      }
     },
     "clash": {
       "title": "Clash 設定",
@@ -162,6 +168,7 @@
         "fields": {
           "language": "語言設定",
           "themeMode": "主題模式",
+          "themePalette": "Theme Palette",
           "trayClickEvent": "系統匣點擊事件",
           "copyEnvType": "複製環境變數類型",
           "startPage": "啟動頁面",

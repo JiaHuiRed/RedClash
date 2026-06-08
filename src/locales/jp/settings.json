@@ -87,7 +87,13 @@
     "appearance": {
       "light": "Light",
       "dark": "Dark",
-      "system": "System"
+      "system": "System",
+      "palettes": {
+        "red": "Red",
+        "blue": "Deep Blue",
+        "green": "Eye Care",
+        "beige": "Beige"
+      }
     },
     "clash": {
       "title": "Clash設定",
@@ -162,6 +168,7 @@
         "fields": {
           "language": "言語設定",
           "themeMode": "テーマモード",
+          "themePalette": "Theme Palette",
           "trayClickEvent": "トレイアイコンクリックイベント",
           "copyEnvType": "環境変数タイプをコピー",
           "startPage": "起動ページ",

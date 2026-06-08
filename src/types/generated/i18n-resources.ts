@@ -470,6 +470,8 @@ export interface TranslationResources {
         title: {
           chainMode: string
           default: string
+          direct: string
+          global: string
         }
         tooltips: {
           delayCheck: string

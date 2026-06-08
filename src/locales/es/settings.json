@@ -87,7 +87,13 @@
     "appearance": {
       "light": "Light",
       "dark": "Dark",
-      "system": "System"
+      "system": "System",
+      "palettes": {
+        "red": "Red",
+        "blue": "Deep Blue",
+        "green": "Eye Care",
+        "beige": "Beige"
+      }
     },
     "clash": {
       "title": "Ajustes de Clash",
@@ -162,6 +168,7 @@
         "fields": {
           "language": "Configuración de idioma",
           "themeMode": "Modo de tema",
+          "themePalette": "Theme Palette",
           "trayClickEvent": "Evento de clic en el icono de la bandeja",
           "copyEnvType": "Copiar tipo de variable de entorno",
           "startPage": "Página de inicio",

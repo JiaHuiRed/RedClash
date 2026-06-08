@@ -59,7 +59,9 @@
     },
     "title": {
       "default": "프록시 그룹",
-      "chainMode": "프록시 체인 모드"
+      "chainMode": "프록시 체인 모드",
+      "global": "전체 프록시",
+      "direct": "직접 연결"
     }
   },
   "feedback": {

@@ -298,25 +298,28 @@ const HomePage = () => {
   )
 
   // 新增：保存设置时用requestIdleCallback/setTimeout
-  const handleSaveSettings = (newCards: HomeCardsSettings) => {
-    if (window.requestIdleCallback) {
-      window.requestIdleCallback(() =>
-        setLocalHomeCards({
-          value: newCards,
-          baseSignature: remoteSignature,
-        }),
-      )
-    } else {
-      setTimeout(
-        () =>
+  const handleSaveSettings = useCallback(
+    (newCards: HomeCardsSettings) => {
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(() =>
           setLocalHomeCards({
             value: newCards,
             baseSignature: remoteSignature,
           }),
-        0,
-      )
-    }
-  }
+        )
+      } else {
+        setTimeout(
+          () =>
+            setLocalHomeCards({
+              value: newCards,
+              baseSignature: remoteSignature,
+            }),
+          0,
+        )
+      }
+    },
+    [remoteSignature],
+  )
 
   const nonCriticalCards = useMemo(
     () => [

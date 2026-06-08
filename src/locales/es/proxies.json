@@ -59,7 +59,9 @@
     },
     "title": {
       "default": "Grupos de proxies",
-      "chainMode": "Proxy Chain Mode"
+      "chainMode": "Proxy Chain Mode",
+      "global": "Proxy Global",
+      "direct": "Modo Directo"
     }
   },
   "feedback": {

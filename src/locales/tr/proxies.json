@@ -59,7 +59,9 @@
     },
     "title": {
       "default": "Vekil Grupları",
-      "chainMode": "Proxy Chain Mode"
+      "chainMode": "Proxy Chain Mode",
+      "global": "Global Proxy",
+      "direct": "Dogrudan Mod"
     }
   },
   "feedback": {

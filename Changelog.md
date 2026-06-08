@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.0.6 (2026-06-08)
+
+### 🐞 修复问题
+
+- **修复 Windows 右键菜单失效**：`_layout.tsx` 中 `onContextMenu` 误用 `e.currentTarget`（始终是 Paper 根元素），导致 Windows 上 `<input>` / `<textarea>` 的右键复制粘贴菜单被拦截；改为 `e.target` 正确检测实际点击元素
+- **修复内核通信错误 UI**（`clash-mode-card.tsx`）：
+  - 所有模式描述框始终带 primary/红色边框的问题修复，正常描述改为低调灰底无边框
+  - 核心离线时由纯文字升级为 ⚠️ 警告黄色图标 + 文字 + 可点击**重试按钮**（带 loading 状态）
+- **修复无障碍回归**：`use-custom-theme.ts` 中 `* { outline: none !important }` 删除了键盘导航焦点轮廓，改为 `*:focus:not(:focus-visible) { outline: none }` 仅在鼠标点击时隐藏
+
+### 🎨 UI 优化
+
+- **macOS 交通灯升级**：改为 **group hover** 行为（悬停整组三个按钮同时亮起），hover 时显示 ✕ / − / ⤢ 符号（淡入动画），idle 饱和度降至 0.45，按钮尺寸 12 → 13px
+- **标题栏毛玻璃增强**：模糊半径 20px → 28px，饱和度 180% → 200%，透明度 0.72 → 0.60（更通透）；暗色背景调整为 `rgba(10,10,15,0.55)` 并补充 `.dark` 选择器兜底
+- **代理页标题跟随模式**：根据当前 Clash 模式动态显示标题 — 规则 → "代理组"，全局 → "全局代理"，直连 → "直连模式"；为全部 13 种语言补充翻译
+
+### 🧹 清理
+
+- **移除"测试"导航项**：侧边栏去掉 `/unlock` 路由及对应导入
+- **移除死代码**：`_layout.tsx` 删除空 `<div animation="fadeIn" />` 和每次渲染重注入的内联 `<style>`；`@keyframes fadeIn` 移到 `layout.scss` 并挂到 `.layout` 根容器实现真正入场动画
+
+### 🚀 性能 / 代码质量
+
+- `home.tsx`：`handleSaveSettings` 补加 `useCallback`
+- `use-custom-theme.ts`：palette 验证改为 `Array.includes`，补充 `type ThemePalette` 导入
+
 ## v0.0.5 (2026-06-07)
 
 ### 🚀 优化改进
@@ -37,7 +63,7 @@
 ### 🔨 构建
 
 - **`pnpm dev`** 走 `verge-dev` feature 编译后端
-- **`pnpm build`** 走 release 模式生成 NSIS 安装包（`bundle.targets: ["nsis"]`，`tauri.windows.conf.json` 配置）
+- **`pnpm build`** 走 release 模式编译，产物为 `target/release/red-clash.exe`
 - **cargo features**：`protocol-asset / devtools / tray-icon / image-ico / image-png`
 
 ## v0.0.3 (2026-06-06)

@@ -2,10 +2,20 @@ import {
   DirectionsRounded,
   LanguageRounded,
   MultipleStopRounded,
+  RefreshRounded,
+  WarningAmberRounded,
 } from '@mui/icons-material'
-import { Box, Paper, Stack, Typography } from '@mui/material'
+import {
+  Box,
+  CircularProgress,
+  IconButton,
+  Paper,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { useLockFn } from 'ahooks'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { closeAllConnections } from 'tauri-plugin-mihomo-api'
 
@@ -49,6 +59,8 @@ export const ClashModeCard = () => {
   const { isCoreDataPending } = useCoreDataStatus()
   const { refreshClashConfig } = useAppRefreshers()
 
+  const [isRetrying, setIsRetrying] = useState(false)
+
   // 支持的模式列表
   const modeList = CLASH_MODES
 
@@ -59,15 +71,22 @@ export const ClashModeCard = () => {
       ? currentMode
       : undefined
 
+  const isError = !isCoreDataPending && !currentModeKey
+
   const modeDescription = useMemo(() => {
-    if (currentModeKey) {
-      return t(MODE_META[currentModeKey].description)
-    }
-    if (isCoreDataPending) {
-      return '\u00A0'
-    }
-    return t('home.components.clashMode.errors.communication')
+    if (currentModeKey) return t(MODE_META[currentModeKey].description)
+    if (isCoreDataPending) return '\u00A0'
+    return null
   }, [currentModeKey, isCoreDataPending, t])
+
+  const handleRetry = useLockFn(async () => {
+    setIsRetrying(true)
+    try {
+      await refreshClashConfig()
+    } finally {
+      setIsRetrying(false)
+    }
+  })
 
   // 模式图标映射
   const modeIcons = useMemo(
@@ -132,21 +151,6 @@ export const ClashModeCard = () => {
         : {},
   })
 
-  // 描述样式
-  const descriptionStyles = {
-    width: '95%',
-    textAlign: 'center',
-    color: 'text.secondary',
-    p: 0.8,
-    borderRadius: 1,
-    borderColor: 'primary.main',
-    borderWidth: 1,
-    borderStyle: 'solid',
-    backgroundColor: 'background.paper',
-    wordBreak: 'break-word',
-    hyphens: 'auto',
-  }
-
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
       {/* 模式选择按钮组 */}
@@ -182,20 +186,72 @@ export const ClashModeCard = () => {
         ))}
       </Stack>
 
-      {/* 说明文本区域 */}
+      {/* 说明文本 / 错误状态 */}
       <Box
-        sx={{
-          width: '100%',
-          my: 1,
-          position: 'relative',
-          display: 'flex',
-          justifyContent: 'center',
-          overflow: 'visible',
-        }}
+        sx={{ width: '100%', my: 1, display: 'flex', justifyContent: 'center' }}
       >
-        <Typography variant="caption" component="div" sx={descriptionStyles}>
-          {modeDescription}
-        </Typography>
+        {isError ? (
+          // 通信错误：警告样式 + 重试按钮
+          <Box
+            sx={{
+              width: '95%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0.75,
+              p: 0.8,
+              borderRadius: 1,
+              border: '1px solid',
+              borderColor: 'warning.main',
+              bgcolor: ({ palette }) =>
+                palette.mode === 'dark'
+                  ? 'rgba(255,152,0,0.08)'
+                  : 'rgba(255,152,0,0.06)',
+            }}
+          >
+            <WarningAmberRounded
+              sx={{ fontSize: 14, color: 'warning.main', flexShrink: 0 }}
+            />
+            <Typography
+              variant="caption"
+              sx={{ color: 'warning.main', lineHeight: 1.4 }}
+            >
+              {t('home.components.clashMode.errors.communication')}
+            </Typography>
+            <Tooltip title={t('shared.actions.retry')} arrow>
+              <IconButton
+                size="small"
+                onClick={handleRetry}
+                disabled={isRetrying}
+                sx={{ ml: 0.5, p: 0.25, color: 'warning.main' }}
+              >
+                {isRetrying ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : (
+                  <RefreshRounded sx={{ fontSize: 14 }} />
+                )}
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ) : modeDescription ? (
+          // 正常模式描述（无边框、低调）
+          <Typography
+            variant="caption"
+            sx={{
+              width: '95%',
+              textAlign: 'center',
+              color: 'text.secondary',
+              p: 0.8,
+              borderRadius: 1,
+              bgcolor: ({ palette }) =>
+                palette.mode === 'dark'
+                  ? 'rgba(255,255,255,0.04)'
+                  : 'rgba(0,0,0,0.03)',
+            }}
+          >
+            {modeDescription}
+          </Typography>
+        ) : null}
       </Box>
     </Box>
   )

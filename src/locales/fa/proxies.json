@@ -59,7 +59,9 @@
     },
     "title": {
       "default": "گروه‌های پراکسی",
-      "chainMode": "Proxy Chain Mode"
+      "chainMode": "Proxy Chain Mode",
+      "global": "پروکسی سراسری",
+      "direct": "حالت مستقیم"
     }
   },
   "feedback": {

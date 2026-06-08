@@ -87,7 +87,13 @@
     "appearance": {
       "light": "Light",
       "dark": "Dark",
-      "system": "System"
+      "system": "System",
+      "palettes": {
+        "red": "Red",
+        "blue": "Deep Blue",
+        "green": "Eye Care",
+        "beige": "Beige"
+      }
     },
     "clash": {
       "title": "Clash Ayarı",
@@ -162,6 +168,7 @@
         "fields": {
           "language": "Dil",
           "themeMode": "Tema Modu",
+          "themePalette": "Theme Palette",
           "trayClickEvent": "Sistem Tepsisi Tıklama Olayı",
           "copyEnvType": "Env Tipini Kopyala",
           "startPage": "Başlangıç Sayfası",

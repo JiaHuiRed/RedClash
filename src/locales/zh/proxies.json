@@ -59,7 +59,9 @@
     },
     "title": {
       "default": "代理组",
-      "chainMode": "链式代理模式"
+      "chainMode": "链式代理模式",
+      "global": "全局代理",
+      "direct": "直连模式"
     }
   },
   "feedback": {

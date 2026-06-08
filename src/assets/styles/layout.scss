@@ -1,6 +1,12 @@
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .layout {
   width: 100%;
   height: 100vh;
+  animation: fadeIn 0.3s ease-out;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -119,10 +125,10 @@
     box-sizing: border-box;
     height: 36px;
     border-bottom: 1px solid var(--titlebar-border, var(--divider-color));
-    // 毛玻璃：半透背景 + 背景模糊
-    background: var(--titlebar-bg, rgba(245, 245, 245, 0.72));
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    // 毛玻璃：降低不透明度 + 加大模糊量 + 提高饱和度
+    background: var(--titlebar-bg, rgba(245, 245, 245, 0.60));
+    backdrop-filter: saturate(200%) blur(28px);
+    -webkit-backdrop-filter: saturate(200%) blur(28px);
 
     &-drag-region {
       align-self: stretch;

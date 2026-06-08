@@ -59,7 +59,9 @@
     },
     "title": {
       "default": "Grup Proksi",
-      "chainMode": "Proxy Chain Mode"
+      "chainMode": "Proxy Chain Mode",
+      "global": "Proksi Global",
+      "direct": "Mode Langsung"
     }
   },
   "feedback": {

@@ -7,8 +7,17 @@ import { Theme as TauriOsTheme } from '@tauri-apps/api/window'
 import { useEffect, useMemo } from 'react'
 
 import { useVerge } from '@/hooks/use-verge'
-import { defaultDarkTheme, defaultTheme, defaultThemePalette, getThemeByPalette } from '@/pages/_theme'
-import { useSetThemeMode, useSetThemePalette, useThemeMode, useThemePalette } from '@/services/states'
+import {
+  defaultThemePalette,
+  getThemeByPalette,
+  type ThemePalette,
+} from '@/pages/_theme'
+import {
+  useSetThemeMode,
+  useSetThemePalette,
+  useThemeMode,
+  useThemePalette,
+} from '@/services/states'
 
 const CSS_INJECTION_SCOPE_ROOT = '[data-css-injection-root]'
 const CSS_INJECTION_SCOPE_LIMIT =
@@ -77,8 +86,8 @@ export const useCustomTheme = () => {
   const hasUserBackground = !!userBackgroundImage
 
   useEffect(() => {
-    if (theme_palette === 'red' || theme_palette === 'blue' || theme_palette === 'green' || theme_palette === 'beige') {
-      setPalette(theme_palette)
+    if (['red', 'blue', 'green', 'beige'].includes(theme_palette as string)) {
+      setPalette(theme_palette as ThemePalette)
     }
   }, [theme_palette, setPalette])
 
@@ -307,10 +316,9 @@ export const useCustomTheme = () => {
           background-color: ${mode === 'light' ? '#ffffff' : '#2E303D'} !important;
         }
 
-        /* 移除可能的白色点或线条 */
-        * {
+        /* 鼠标点击时隐藏 outline，保留键盘导航的 focus 轮廓 */
+        *:focus:not(:focus-visible) {
           outline: none !important;
-          box-shadow: none !important;
         }
       `
 

@@ -87,7 +87,13 @@
     "appearance": {
       "light": "Light",
       "dark": "Dark",
-      "system": "System"
+      "system": "System",
+      "palettes": {
+        "red": "Red",
+        "blue": "Deep Blue",
+        "green": "Eye Care",
+        "beige": "Beige"
+      }
     },
     "clash": {
       "title": "إعدادات Clash",
@@ -162,6 +168,7 @@
         "fields": {
           "language": "اللغة",
           "themeMode": "وضع السمة",
+          "themePalette": "Theme Palette",
           "trayClickEvent": "حدث النقر على الأيقونة في شريط المهام",
           "copyEnvType": "نسخ نوع البيئة",
           "startPage": "صفحة البدء",

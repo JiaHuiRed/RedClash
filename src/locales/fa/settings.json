@@ -87,7 +87,13 @@
     "appearance": {
       "light": "Light",
       "dark": "Dark",
-      "system": "System"
+      "system": "System",
+      "palettes": {
+        "red": "Red",
+        "blue": "Deep Blue",
+        "green": "Eye Care",
+        "beige": "Beige"
+      }
     },
     "clash": {
       "title": "تنظیمات Clash",
@@ -162,6 +168,7 @@
         "fields": {
           "language": "زبان",
           "themeMode": "حالت تم",
+          "themePalette": "Theme Palette",
           "trayClickEvent": "رویداد کلیک در سینی سیستم",
           "copyEnvType": "کپی نوع محیط",
           "startPage": "صفحه شروع",

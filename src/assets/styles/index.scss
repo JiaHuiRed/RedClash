@@ -24,15 +24,16 @@ body {
   --background-color-alpha: rgba(24, 103, 192, 0.1);
   --border-radius: 8px;
   // 标题栏毛玻璃：light 模式下浅玻璃
-  --titlebar-bg: rgba(245, 245, 245, 0.72);
-  --titlebar-border: rgba(0, 0, 0, 0.08);
+  --titlebar-bg: rgba(245, 245, 245, 0.60);
+  --titlebar-border: rgba(0, 0, 0, 0.07);
 }
 
 // MUI 暗色模式下，标题栏切到深色玻璃
 [data-mui-color-scheme='dark'],
 .MuiThemeProvider-root[data-mui-color-scheme='dark'],
-html[data-mui-color-scheme='dark'] {
-  --titlebar-bg: rgba(13, 27, 42, 0.6);
+html[data-mui-color-scheme='dark'],
+.dark {
+  --titlebar-bg: rgba(18, 8, 8, 0.88);
   --titlebar-border: rgba(255, 255, 255, 0.08);
 }
 

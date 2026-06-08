@@ -491,52 +491,6 @@ async function resolveResource(binInfo) {
   log_success(`${file} finished`)
 }
 
-// SimpleSC.dll (win plugin)
-const resolvePlugin = async () => {
-  const url =
-    'https://nsis.sourceforge.io/mediawiki/images/e/ef/NSIS_Simple_Service_Plugin_Unicode_1.30.zip'
-  const tempDir = path.join(TEMP_DIR, 'SimpleSC')
-  const tempZip = path.join(
-    tempDir,
-    'NSIS_Simple_Service_Plugin_Unicode_1.30.zip',
-  )
-  const tempDll = path.join(tempDir, 'SimpleSC.dll')
-  const pluginDir = path.join(process.env.APPDATA || '', 'Local/NSIS')
-  const pluginPath = path.join(pluginDir, 'SimpleSC.dll')
-  await fsp.mkdir(pluginDir, { recursive: true })
-  await fsp.mkdir(tempDir, { recursive: true })
-  if (!FORCE && fs.existsSync(pluginPath)) return
-  try {
-    if (!fs.existsSync(tempZip)) {
-      await downloadFile(url, tempZip)
-    }
-    const zip = new AdmZip(tempZip)
-    zip
-      .getEntries()
-      .forEach((entry) => log_debug(`"SimpleSC" entry`, entry.entryName))
-    zip.extractAllTo(tempDir, true)
-    if (fs.existsSync(tempDll)) {
-      await fsp.cp(tempDll, pluginPath, { recursive: true, force: true })
-      log_success(`unzip finished: "SimpleSC"`)
-    } else {
-      // 如果 dll 名称不同，尝试找到 dll
-      const files = await fsp.readdir(tempDir)
-      const dll = files.find((f) => f.toLowerCase().endsWith('.dll'))
-      if (dll) {
-        await fsp.cp(path.join(tempDir, dll), pluginPath, {
-          recursive: true,
-          force: true,
-        })
-        log_success(`unzip finished: "SimpleSC" (found ${dll})`)
-      } else {
-        throw new Error('SimpleSC.dll not found in zip')
-      }
-    }
-  } finally {
-    await fsp.rm(tempDir, { recursive: true, force: true })
-  }
-}
-
 // service chmod (保留并使用 glob)
 const resolveServicePermission = async () => {
   const serviceExecutables = [
@@ -763,7 +717,6 @@ const tasks = [
       getLatestReleaseVersion().then(() => resolveSidecar(clashMeta())),
     retry: 5,
   },
-  { name: 'plugin', func: resolvePlugin, retry: 5, winOnly: true },
   { name: 'service', func: resolveServiceBundle, retry: 5 },
   { name: 'mmdb', func: resolveMmdb, retry: 5 },
   { name: 'geosite', func: resolveGeosite, retry: 5 },

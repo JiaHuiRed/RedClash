@@ -59,7 +59,9 @@
     },
     "title": {
       "default": "مجموعات الوكلاء",
-      "chainMode": "Proxy Chain Mode"
+      "chainMode": "Proxy Chain Mode",
+      "global": "وكيل عام",
+      "direct": "وضع مباشر"
     }
   },
   "feedback": {

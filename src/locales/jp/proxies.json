@@ -59,7 +59,9 @@
     },
     "title": {
       "default": "プロキシグループ",
-      "chainMode": "Proxy Chain Mode"
+      "chainMode": "Proxy Chain Mode",
+      "global": "グローバルプロキシ",
+      "direct": "ダイレクトモード"
     }
   },
   "feedback": {

@@ -149,6 +149,10 @@ const ProxyPage = () => {
               sx={{ p: 0.25 }}
             />
           </Box>
+        ) : curMode === 'global' ? (
+          t('proxies.page.title.global')
+        ) : curMode === 'direct' ? (
+          t('proxies.page.title.direct')
         ) : (
           t('proxies.page.title.default')
         )

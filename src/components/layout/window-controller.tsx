@@ -3,30 +3,40 @@ import { forwardRef, useImperativeHandle } from 'react'
 
 import { useWindowControls } from '@/hooks/use-window'
 
-const SIZE = 12
+const SIZE = 13
 const GAP = 8
 
+// 基础圆点样式
 const baseDot = {
   width: SIZE,
   height: SIZE,
   borderRadius: '50%',
   cursor: 'default',
+  flexShrink: 0,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  border: '0.5px solid rgba(0, 0, 0, 0.12)',
-  transition: 'filter 120ms ease, background 120ms ease',
+  border: '0.5px solid rgba(0,0,0,0.22)',
+  transition: 'filter 100ms ease',
+  position: 'relative' as const,
+  padding: 0,
+  outline: 'none',
+  appearance: 'none' as const,
+  WebkitAppearance: 'none' as const,
+  background: 'none',
+  '&:hover': { filter: 'brightness(1.25)' },
 }
 
-const idle = (color: string) => ({
-  background: color,
-  filter: 'saturate(0.6) brightness(0.95)',
-})
-
-const hover = (color: string) => ({
-  background: color,
-  filter: 'none',
-})
+// 符号层：始终可见
+const symbolStyle: React.CSSProperties = {
+  position: 'absolute',
+  fontSize: 8,
+  fontWeight: 900,
+  lineHeight: 1,
+  color: 'rgba(0,0,0,0.55)',
+  userSelect: 'none',
+  pointerEvents: 'none',
+}
 
 export const WindowControls = forwardRef(function WindowControls(props, ref) {
   const {
@@ -48,11 +58,16 @@ export const WindowControls = forwardRef(function WindowControls(props, ref) {
       toggleFullscreen,
       toggleMaximize,
     }),
-    [currentWindow, maximized, minimize, close, toggleFullscreen, toggleMaximize],
+    [
+      currentWindow,
+      maximized,
+      minimize,
+      close,
+      toggleFullscreen,
+      toggleMaximize,
+    ],
   )
 
-  // macOS 风格：3 个交通灯 —— 关闭 / 最小化 / 全屏
-  // 未 hover 时饱和度降低（像 macOS 那样），hover 时显原色
   return (
     <Box
       sx={{
@@ -60,33 +75,38 @@ export const WindowControls = forwardRef(function WindowControls(props, ref) {
         gap: `${GAP}px`,
         alignItems: 'center',
         height: SIZE,
-        padding: '0 8px',
+        px: 1,
       }}
     >
+      {/* 关闭 */}
       <Box
         component="button"
         aria-label="close"
-        sx={{ ...baseDot, ...idle('#FF5F57') }}
+        sx={{ ...baseDot, background: '#FF5F57' }}
         onClick={close}
-        onMouseEnter={(e) => Object.assign(e.currentTarget.style, hover('#FF5F57'))}
-        onMouseLeave={(e) => Object.assign(e.currentTarget.style, idle('#FF5F57'))}
-      />
+      >
+        <span style={symbolStyle}>✕</span>
+      </Box>
+
+      {/* 最小化 */}
       <Box
         component="button"
         aria-label="minimize"
-        sx={{ ...baseDot, ...idle('#FEBC2E') }}
+        sx={{ ...baseDot, background: '#FEBC2E' }}
         onClick={minimize}
-        onMouseEnter={(e) => Object.assign(e.currentTarget.style, hover('#FEBC2E'))}
-        onMouseLeave={(e) => Object.assign(e.currentTarget.style, idle('#FEBC2E'))}
-      />
+      >
+        <span style={symbolStyle}>−</span>
+      </Box>
+
+      {/* 最大化 */}
       <Box
         component="button"
         aria-label="maximize"
-        sx={{ ...baseDot, ...idle('#28C840') }}
+        sx={{ ...baseDot, background: '#28C840' }}
         onClick={toggleMaximize}
-        onMouseEnter={(e) => Object.assign(e.currentTarget.style, hover('#28C840'))}
-        onMouseLeave={(e) => Object.assign(e.currentTarget.style, idle('#28C840'))}
-      />
+      >
+        <span style={{ ...symbolStyle, fontSize: 7 }}>⤢</span>
+      </Box>
     </Box>
   )
 })

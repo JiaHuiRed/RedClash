@@ -74,6 +74,7 @@ export const AppDataProvider = ({
     queryKey: ['getClashConfig'],
     queryFn: getBaseConfig,
     ...TQ_MIHOMO,
+    refetchInterval: (query) => (query.state.status === 'error' ? 3000 : false),
   })
 
   const { data: proxyProviders, refetch: _refetchProxyProviders } = useQuery({

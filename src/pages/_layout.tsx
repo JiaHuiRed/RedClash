@@ -200,7 +200,7 @@ const Layout = () => {
   )
 
   useLoadingOverlay(themeReady)
-  useLayoutEvents()
+  useLayoutEvents(() => {})
 
   useEffect(() => {
     if (language) {
@@ -228,21 +228,6 @@ const Layout = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      {/* 左侧底部窗口控制按钮 */}
-      <div
-        style={{
-          animation: 'fadeIn 0.5s',
-          WebkitAnimation: 'fadeIn 0.5s',
-        }}
-      />
-      <style>
-        {`
-            @keyframes fadeIn {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-          `}
-      </style>
       <Paper
         square
         elevation={0}
@@ -255,9 +240,9 @@ const Layout = () => {
           if (
             OS === 'windows' &&
             !['input', 'textarea'].includes(
-              e.currentTarget.tagName.toLowerCase(),
+              (e.target as HTMLElement).tagName.toLowerCase(),
             ) &&
-            !e.currentTarget.isContentEditable
+            !(e.target as HTMLElement).isContentEditable
           ) {
             e.preventDefault()
           }

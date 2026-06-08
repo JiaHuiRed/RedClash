@@ -87,7 +87,13 @@
     "appearance": {
       "light": "라이트",
       "dark": "다크",
-      "system": "시스템"
+      "system": "시스템",
+      "palettes": {
+        "red": "Red",
+        "blue": "Deep Blue",
+        "green": "Eye Care",
+        "beige": "Beige"
+      }
     },
     "clash": {
       "title": "Clash 설정",
@@ -162,6 +168,7 @@
         "fields": {
           "language": "언어",
           "themeMode": "테마 모드",
+          "themePalette": "Theme Palette",
           "trayClickEvent": "트레이 클릭 이벤트",
           "copyEnvType": "환경 유형 복사",
           "startPage": "시작 페이지",

@@ -59,7 +59,9 @@
     },
     "title": {
       "default": "Прокси төркемнәре",
-      "chainMode": "Proxy Chain Mode"
+      "chainMode": "Proxy Chain Mode",
+      "global": "Globalь proksi",
+      "direct": "Tury totashu"
     }
   },
   "feedback": {

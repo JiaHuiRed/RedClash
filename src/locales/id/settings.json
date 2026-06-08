@@ -87,7 +87,13 @@
     "appearance": {
       "light": "Light",
       "dark": "Dark",
-      "system": "System"
+      "system": "System",
+      "palettes": {
+        "red": "Red",
+        "blue": "Deep Blue",
+        "green": "Eye Care",
+        "beige": "Beige"
+      }
     },
     "clash": {
       "title": "Pengaturan Clash",
@@ -162,6 +168,7 @@
         "fields": {
           "language": "Bahasa",
           "themeMode": "Mode Tema",
+          "themePalette": "Theme Palette",
           "trayClickEvent": "Acara Klik Tray",
           "copyEnvType": "Salin Jenis Env",
           "startPage": "Halaman Mulai",
