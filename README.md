@@ -6,7 +6,7 @@
 </h1>
 
 <p align="center">
-  <i>哥哥自用的 Clash 桌面客户端 · 红黑主题 · Windows 优先</i>
+  <i>自用的 Clash 桌面客户端 · 红黑主题 · 仅Windows</i>
 </p>
 
 <p align="center">
