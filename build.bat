@@ -10,8 +10,11 @@ cd /d "%~dp0"
 :: 限制并行编译数，避免低内存机器 LLVM OOM
 set CARGO_BUILD_JOBS=2
 set NODE_OPTIONS=--max-old-space-size=4096
+:: 覆盖 release profile 设置，降低内存峰值
+set CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
+set CARGO_PROFILE_RELEASE_LTO=false
 
-echo [1/2] 安装前端依赖...
+echo [1/3] 安装前端依赖...
 call pnpm install
 if %ERRORLEVEL% NEQ 0 (
     echo [错误] pnpm install 失败
@@ -20,8 +23,18 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo [2/2] 编译 Release 包（预计 10-20 分钟）...
-call node_modules\.bin\tauri build
+echo [2/3] 构建前端（Vite）...
+call pnpm run web:build
+if %ERRORLEVEL% NEQ 0 (
+    echo [错误] 前端构建失败
+    pause
+    exit /b 1
+)
+
+echo.
+echo [3/3] 编译 Rust 后端并打包（预计 15-25 分钟）...
+:: -c 跳过 beforeBuildCommand，前端已在上一步构建完毕
+call node_modules\.bin\tauri build -c "{\"build\":{\"beforeBuildCommand\":\"\"}}"
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo [错误] 编译失败，请查看上方错误信息
