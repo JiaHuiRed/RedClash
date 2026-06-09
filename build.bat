@@ -8,11 +8,12 @@ echo.
 cd /d "%~dp0"
 
 :: 限制并行编译数，避免低内存机器 LLVM OOM
-set CARGO_BUILD_JOBS=2
+set CARGO_BUILD_JOBS=1
 set NODE_OPTIONS=--max-old-space-size=4096
 :: 覆盖 release profile 设置，降低内存峰值
-set CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16
+set CARGO_PROFILE_RELEASE_CODEGEN_UNITS=64
 set CARGO_PROFILE_RELEASE_LTO=false
+set CARGO_PROFILE_RELEASE_OPT_LEVEL=1
 
 echo [1/3] 安装前端依赖...
 call pnpm install
