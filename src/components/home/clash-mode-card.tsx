@@ -25,7 +25,7 @@ import {
   useClashConfigData,
   useCoreDataStatus,
 } from '@/providers/app-data-context'
-import { patchClashMode } from '@/services/cmds'
+import { patchClashMode, restartCore } from '@/services/cmds'
 import type { TranslationKey } from '@/types/generated/i18n-keys'
 
 const CLASH_MODES = ['rule', 'global', 'direct'] as const
@@ -57,7 +57,7 @@ export const ClashModeCard = () => {
   const { verge } = useVerge()
   const { clashConfig } = useClashConfigData()
   const { isCoreDataPending } = useCoreDataStatus()
-  const { refreshClashConfig } = useAppRefreshers()
+  const { refreshClashConfig, refreshAll } = useAppRefreshers()
 
   const [isRetrying, setIsRetrying] = useState(false)
 
@@ -82,6 +82,9 @@ export const ClashModeCard = () => {
   const handleRetry = useLockFn(async () => {
     setIsRetrying(true)
     try {
+      await restartCore()
+      await refreshAll()
+    } catch {
       await refreshClashConfig()
     } finally {
       setIsRetrying(false)

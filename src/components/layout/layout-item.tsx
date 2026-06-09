@@ -78,13 +78,17 @@ export const LayoutItem = (props: Props) => {
           ({ palette: { mode, primary } }) => {
             const bgcolor =
               mode === 'light'
-                ? alpha(primary.main, 0.15)
+                ? alpha(primary.main, 0.28)
                 : alpha(primary.main, 0.35)
-            const color = mode === 'light' ? '#1f1f1f' : '#ffffff'
+            const color = mode === 'light' ? primary.dark : '#ffffff'
             return {
               '&.Mui-selected': { bgcolor },
               '&.Mui-selected:hover': { bgcolor },
-              '&.Mui-selected .MuiListItemText-primary': { color },
+              '&.Mui-selected .MuiListItemText-primary': {
+                color,
+                fontWeight: 800,
+              },
+              '&.Mui-selected .MuiListItemIcon-root': { color: primary.main },
             }
           },
         ]}

@@ -33,8 +33,8 @@ body {
 .MuiThemeProvider-root[data-mui-color-scheme='dark'],
 html[data-mui-color-scheme='dark'],
 .dark {
-  --titlebar-bg: rgba(18, 8, 8, 0.88);
-  --titlebar-border: rgba(255, 255, 255, 0.08);
+  --titlebar-bg: rgba(0, 0, 0, 0.45);
+  --titlebar-border: rgba(255, 255, 255, 0.10);
 }
 
 ::selection {

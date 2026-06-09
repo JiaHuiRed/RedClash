@@ -53,16 +53,25 @@ const ProxyPage = () => {
   const { verge } = useVerge()
 
   const normalizedMode = clashConfig?.mode?.toLowerCase()
-  const curMode = isMode(normalizedMode) ? normalizedMode : undefined
+  const actualMode = isMode(normalizedMode) ? normalizedMode : undefined
+  const [optimisticMode, setOptimisticMode] = useState<Mode | undefined>(
+    undefined,
+  )
+  const curMode = optimisticMode ?? actualMode
   const chainWarning = t('proxies.page.chain.warning')
 
   const onChangeMode = useLockFn(async (mode: Mode) => {
-    // 断开连接
-    if (mode !== curMode && verge?.auto_close_connection) {
+    if (mode !== actualMode && verge?.auto_close_connection) {
       closeAllConnections()
     }
-    await patchClashMode(mode)
-    refreshClashConfig()
+    setOptimisticMode(mode)
+    try {
+      await patchClashMode(mode)
+      refreshClashConfig()
+    } catch (error) {
+      setOptimisticMode(undefined)
+      console.error('Failed to change mode:', error)
+    }
   })
 
   const onToggleChainMode = useLockFn(async () => {
@@ -123,6 +132,11 @@ const ProxyPage = () => {
       cancelled = true
     }
   }, [isChainMode, updateChainConfigData])
+
+  useEffect(() => {
+    // eslint-disable-next-line @eslint-react/set-state-in-effect
+    if (actualMode) setOptimisticMode(undefined)
+  }, [actualMode])
 
   useEffect(() => {
     if (normalizedMode && !isMode(normalizedMode)) {

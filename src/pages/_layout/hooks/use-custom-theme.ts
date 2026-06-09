@@ -218,7 +218,7 @@ export const useCustomTheme = () => {
 
     const rootEle = document.documentElement
     if (rootEle) {
-      const backgroundColor = mode === 'light' ? '#ECECEC' : dt.background_color
+      const backgroundColor = dt.background_color
       const selectColor = mode === 'light' ? '#f5f5f5' : '#3E3E3E'
       const scrollColor = mode === 'light' ? '#90939980' : '#555555'
       const dividerColor =
@@ -235,6 +235,14 @@ export const useCustomTheme = () => {
       rootEle.style.setProperty(
         '--window-border-color',
         mode === 'light' ? '#cccccc' : '#1E1E1E',
+      )
+      rootEle.style.setProperty(
+        '--titlebar-bg',
+        mode === 'light' ? 'rgba(245, 245, 245, 0.65)' : 'rgba(0, 0, 0, 0.45)',
+      )
+      rootEle.style.setProperty(
+        '--titlebar-border',
+        mode === 'light' ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.10)',
       )
       rootEle.style.setProperty(
         '--scrollbar-bg',
@@ -257,6 +265,29 @@ export const useCustomTheme = () => {
         setting.background_opacity !== undefined
           ? String(setting.background_opacity)
           : '1',
+      )
+      // Frosted glass variables derived from the active palette
+      rootEle.style.setProperty(
+        '--glass-sidebar-bg',
+        alpha(dt.background_color, 0.72),
+      )
+      rootEle.style.setProperty(
+        '--glass-panel-bg',
+        alpha(dt.background_color, 0.88),
+      )
+      rootEle.style.setProperty(
+        '--glass-tint',
+        alpha(muiTheme.palette.primary.main, 0.13),
+      )
+      rootEle.style.setProperty(
+        '--glass-accent',
+        alpha(muiTheme.palette.secondary.main, 0.08),
+      )
+      rootEle.style.setProperty(
+        '--glass-border',
+        mode === 'light'
+          ? 'rgba(255, 255, 255, 0.55)'
+          : 'rgba(255, 255, 255, 0.09)',
       )
       rootEle.setAttribute('data-css-injection-root', 'true')
     }
@@ -289,31 +320,52 @@ export const useCustomTheme = () => {
           background-color: ${mode === 'light' ? '#a1a1a1' : '#666666'};
         }
 
-        /* 背景图处理 */
-        body {
-          background-color: var(--background-color);
+        /* body 透明，让标题栏毛玻璃能透出桌面 */
+        body { background: transparent !important; }
+
+        /* 根容器：渐变壁纸 / 用户自定义背景 */
+        .layout.MuiPaper-root {
+          background-color: var(--background-color) !important;
           ${
             hasUserBackground
               ? `
-            background-image: var(--user-background-image);
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-blend-mode: var(--background-blend-mode);
-            opacity: var(--background-opacity);
+          background-image: var(--user-background-image) !important;
+          background-size: cover !important;
+          background-position: center !important;
+          background-blend-mode: var(--background-blend-mode) !important;
           `
-              : ''
+              : `
+          background-image:
+            radial-gradient(ellipse at 15% 65%, var(--glass-tint) 0%, transparent 55%),
+            radial-gradient(ellipse at 88% 18%, var(--glass-accent) 0%, transparent 45%);
+          `
           }
+        }
+
+        /* 内容区透明，让根背景渐变透出至侧边栏 */
+        .layout-content {
+          background: transparent !important;
+        }
+
+        /* 侧边栏毛玻璃 */
+        .layout-content__left {
+          background: var(--glass-sidebar-bg) !important;
+          backdrop-filter: saturate(180%) blur(20px) !important;
+          -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
+          border-right: 1px solid var(--glass-border) !important;
+        }
+
+        /* 对话框 / 抽屉毛玻璃 */
+        .MuiDialog-paper,
+        .MuiDrawer-paper {
+          background: var(--glass-panel-bg) !important;
+          backdrop-filter: saturate(180%) blur(20px) !important;
+          -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
         }
 
         /* 修复可能的白色边框 */
         .MuiPaper-root {
           border-color: var(--window-border-color) !important;
-        }
-
-        /* 确保模态框和对话框也使用暗色主题 */
-        .MuiDialog-paper {
-          background-color: ${mode === 'light' ? '#ffffff' : '#2E303D'} !important;
         }
 
         /* 鼠标点击时隐藏 outline，保留键盘导航的 focus 轮廓 */

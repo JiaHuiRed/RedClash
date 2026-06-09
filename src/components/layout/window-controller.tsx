@@ -27,17 +27,6 @@ const baseDot = {
   '&:hover': { filter: 'brightness(1.25)' },
 }
 
-// 符号层：始终可见
-const symbolStyle: React.CSSProperties = {
-  position: 'absolute',
-  fontSize: 8,
-  fontWeight: 900,
-  lineHeight: 1,
-  color: 'rgba(0,0,0,0.55)',
-  userSelect: 'none',
-  pointerEvents: 'none',
-}
-
 export const WindowControls = forwardRef(function WindowControls(props, ref) {
   const {
     currentWindow,
@@ -84,9 +73,7 @@ export const WindowControls = forwardRef(function WindowControls(props, ref) {
         aria-label="close"
         sx={{ ...baseDot, background: '#FF5F57' }}
         onClick={close}
-      >
-        <span style={symbolStyle}>✕</span>
-      </Box>
+      />
 
       {/* 最小化 */}
       <Box
@@ -94,9 +81,7 @@ export const WindowControls = forwardRef(function WindowControls(props, ref) {
         aria-label="minimize"
         sx={{ ...baseDot, background: '#FEBC2E' }}
         onClick={minimize}
-      >
-        <span style={symbolStyle}>−</span>
-      </Box>
+      />
 
       {/* 最大化 */}
       <Box
@@ -104,9 +89,7 @@ export const WindowControls = forwardRef(function WindowControls(props, ref) {
         aria-label="maximize"
         sx={{ ...baseDot, background: '#28C840' }}
         onClick={toggleMaximize}
-      >
-        <span style={{ ...symbolStyle, fontSize: 7 }}>⤢</span>
-      </Box>
+      />
     </Box>
   )
 })

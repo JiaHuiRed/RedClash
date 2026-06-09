@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.0.7 (2026-06-09)
+
+### 🐞 修复问题
+
+- **修复内核通信错误重试逻辑**（`clash-mode-card.tsx`）：重试按钮原先只调用 `refreshClashConfig()`，核心未重启导致节点列表始终为空；改为先 `restartCore()` 再 `refreshAll()`，有异常才降级刷新配置
+
+### 🎨 UI 优化
+
+- **浅色模式主题色显色修复**（`use-custom-theme.ts`）：背景色原先硬编码为 `#ECECEC` 忽略调色板，现改为直接使用 `dt.background_color`，红色浅色模式正确显示 `#F5E8E8` 暖红底色
+- **侧边栏选中项高亮增强**（`layout-item.tsx`）：浅色模式选中背景 alpha `0.15 → 0.28`，文字色由 `#1f1f1f` 改为 `primary.dark`，图标补充 `primary.main` 着色，品牌色更突出
+
+### 🔨 构建
+
+- `Cargo.toml` dev profile：`codegen-units=1 → 64`，`debug=1 → 0`，解决低内存机器编译时 LLVM OOM 问题
+- 新增 `build.bat`：一键 release 编译打包脚本（限制并行 job 数避免 OOM）
+
 ## v0.0.6 (2026-06-08)
 
 ### 🐞 修复问题

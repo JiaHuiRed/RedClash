@@ -16,6 +16,7 @@
     display: flex;
     flex: 1; /* Take remaining height */
     overflow: hidden;
+    background: transparent;
 
     &__left {
       flex: 1 0 200px;
