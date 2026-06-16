@@ -1,4 +1,4 @@
-# Changelog
+# CHANGELOG
 
 ## v0.0.8 (2026-06-16)
 
