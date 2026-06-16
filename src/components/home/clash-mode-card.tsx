@@ -55,7 +55,7 @@ const MODE_META: Record<
 export const ClashModeCard = () => {
   const { t } = useTranslation()
   const { verge } = useVerge()
-  const { clashConfig } = useClashConfigData()
+  const { clashConfig, isClashConfigFetching } = useClashConfigData()
   const { isCoreDataPending } = useCoreDataStatus()
   const { refreshClashConfig, refreshAll } = useAppRefreshers()
 
@@ -71,7 +71,8 @@ export const ClashModeCard = () => {
       ? currentMode
       : undefined
 
-  const isError = !isCoreDataPending && !currentModeKey
+  const isError =
+    !isCoreDataPending && !isClashConfigFetching && !currentModeKey
 
   const modeDescription = useMemo(() => {
     if (currentModeKey) return t(MODE_META[currentModeKey].description)

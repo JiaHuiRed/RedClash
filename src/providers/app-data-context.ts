@@ -53,6 +53,7 @@ export interface RulesContextType {
 export interface ClashConfigContextType {
   clashConfig: BaseConfig | undefined
   isClashConfigPending: boolean
+  isClashConfigFetching: boolean
 }
 
 export interface SystemContextType {

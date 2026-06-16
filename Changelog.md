@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.0.8 (2026-06-16)
+
+### 🐞 修复问题
+
+- **修复首页"内核通信错误"误报**（`clash-mode-card.tsx`、`app-data-provider.tsx`、`app-data-context.ts`）：内核启动时 mihomo API 短暂不可用，3 次快速重试失败后 query 进入 error 状态，`isPending=false` 但 `clashConfig` 仍为 undefined，导致错误横幅持续显示直到 3 秒后的 `refetchInterval` 重试成功。新增 `isClashConfigFetching` 字段传入 context，`isError` 判断加入 `!isClashConfigFetching` 条件，重试期间不显示错误横幅
+
+### 🔨 构建 / CI
+
+- **关闭 Auto Build 定时任务**（`autobuild.yml`）：移除每天 2 次的 cron 触发（北京时间 12:00 / 18:00），改为仅支持手动触发（`workflow_dispatch`），避免因 check-commit 逻辑指向上游仓库导致每次都触发全平台构建并收到失败通知
+
 ## v0.0.7 (2026-06-09)
 
 ### 🐞 修复问题

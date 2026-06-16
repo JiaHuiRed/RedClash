@@ -69,6 +69,7 @@ export const AppDataProvider = ({
   const {
     data: clashConfig,
     isPending: isClashConfigPending,
+    isFetching: isClashConfigFetching,
     refetch: _refetchClashConfig,
   } = useQuery({
     queryKey: ['getClashConfig'],
@@ -225,8 +226,9 @@ export const AppDataProvider = ({
     () => ({
       clashConfig,
       isClashConfigPending,
+      isClashConfigFetching,
     }),
-    [clashConfig, isClashConfigPending],
+    [clashConfig, isClashConfigPending, isClashConfigFetching],
   )
 
   const systemValue = useMemo(() => {

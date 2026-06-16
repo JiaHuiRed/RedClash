@@ -1,6 +1,6 @@
 [package]
 name = "red-clash"
-version = "0.0.7"
+version = "0.0.8"
 description = "RedClash - A Clash GUI client"
 authors = ["QiuYeDeng", "zzzgydi", "Tunglies", "wonfen", "MystiPanda"]
 license = "GPL-3.0-only"
