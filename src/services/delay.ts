@@ -217,8 +217,10 @@ class DelayManager {
       debugLog(`[DelayManager] 调用API测试延迟，代理: ${name}, URL: ${url}`)
 
       // 设置超时处理, delay = 0 为超时
+      // JS 侧超时比 API 超时多 500ms，确保 API 先 settle，
+      // 避免两者同时触发时 race condition 导致 Timeout/Error 随机互换
       const timeoutPromise = new Promise<ProxyDelay>((resolve) => {
-        setTimeout(() => resolve({ delay: 0 }), timeout)
+        setTimeout(() => resolve({ delay: 0 }), timeout + 500)
       })
 
       // 使用Promise.race来实现超时控制

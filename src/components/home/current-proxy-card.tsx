@@ -730,10 +730,14 @@ export const CurrentProxyCard = () => {
       debugLog(`[CurrentProxyCard] 测试URL: ${url}, 超时: ${timeout}ms`)
 
       try {
-        await Promise.race([
-          delayManager.checkListDelay(proxyNames, groupName, timeout),
-          delayGroup(groupName, url, timeout),
-        ])
+        // 先调用 delayGroup 清除 fixed 选中状态，再单独测速
+        // 避免同时双重测速导致节点过载和超时率升高
+        try {
+          await delayGroup(groupName, url, timeout)
+        } catch {
+          // 清除 fixed 失败不影响后续测速
+        }
+        await delayManager.checkListDelay(proxyNames, groupName, timeout)
         debugLog(`[CurrentProxyCard] 延迟测试完成，组: ${groupName}`)
       } catch (error) {
         console.error(

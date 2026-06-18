@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.0.9 (2026-06-18)
+
+### 🐞 修复问题
+
+- **修复延迟测速双重测速导致节点超时率升高**（`proxy-groups.tsx`、`current-proxy-card.tsx`）：`delayGroup`（测速全组）与 `checkListDelay`（逐节点测速）原先通过 `Promise.race` 同时运行，每个节点同时被发起两份连接，对限速/限连的代理服务器雪上加霜；改为串行执行：先 `await delayGroup` 清除 fixed 选中状态，再执行 `checkListDelay` 渐进更新 UI
+- **修复超时节点随机显示 "Timeout" / "Error" 不确定**（`services/delay.ts`）：JS 侧 `setTimeout(timeout)` 与 mihomo API 侧超时完全相同，两者同时触发时 `Promise.race` 随机 settle，同一超时节点不同次测速结果不一致；JS 侧超时改为 `timeout + 500ms`，确保 API 先 settle，结果确定性更好
+- **修复 `auto_close_connection` 默认值不一致**（`hooks/use-proxy-selection.ts`）：设置页 UI 默认显示"自动关闭连接：开"（`?? true`），但实际 hook 里默认为 `false`，未显式保存过设置的用户行为与显示不符；统一改为 `?? true`
+
 ## v0.0.8 (2026-06-16)
 
 ### 🐞 修复问题

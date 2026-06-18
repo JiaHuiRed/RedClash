@@ -418,15 +418,18 @@ export const ProxyGroups = (props: Props) => {
       debugLog(`[ProxyGroups] 测试URL: ${url}, 超时: ${timeout}ms`)
 
       try {
-        await Promise.race([
-          delayManager.checkListDelay(names, groupName, timeout),
-          delayGroup(groupName, url, timeout).then((result) => {
-            debugLog(
-              `[ProxyGroups] getGroupProxyDelays返回结果数量:`,
-              Object.keys(result || {}).length,
-            )
-          }), // 查询group delays 将清除fixed(不关注调用结果)
-        ])
+        // 先调用 delayGroup 清除 fixed 选中状态（不关注延迟结果）
+        // 与 checkListDelay 分开执行，避免同时双重测速导致节点超时率升高
+        try {
+          const result = await delayGroup(groupName, url, timeout)
+          debugLog(
+            `[ProxyGroups] getGroupProxyDelays返回结果数量:`,
+            Object.keys(result || {}).length,
+          )
+        } catch {
+          // 清除 fixed 失败不影响后续测速
+        }
+        await delayManager.checkListDelay(names, groupName, timeout)
         debugLog(`[ProxyGroups] 延迟测试完成，组: ${groupName}`)
       } catch (error) {
         console.error(`[ProxyGroups] 延迟测试出错，组: ${groupName}`, error)

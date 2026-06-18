@@ -52,7 +52,7 @@ export const useProxySelection = (options: ProxySelectionOptions = {}) => {
   // 缓存
   const config = useMemo(
     () => ({
-      autoCloseConnection: verge?.auto_close_connection ?? false,
+      autoCloseConnection: verge?.auto_close_connection ?? true,
       enableConnectionCleanup,
     }),
     [verge?.auto_close_connection, enableConnectionCleanup],
