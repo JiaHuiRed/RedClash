@@ -7,6 +7,13 @@ echo.
 
 cd /d "%~dp0"
 
+:: 杀掉正在运行的 RedClash 及 mihomo 进程，释放 exe 文件锁
+echo [0/3] 关闭正在运行的 RedClash...
+taskkill /F /IM red-clash.exe >nul 2>&1
+taskkill /F /IM mihomo.exe >nul 2>&1
+taskkill /F /IM clash-meta.exe >nul 2>&1
+timeout /t 2 /nobreak >nul
+
 :: 限制并行编译数，避免低内存机器 LLVM OOM
 set CARGO_BUILD_JOBS=1
 set NODE_OPTIONS=--max-old-space-size=4096
