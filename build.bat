@@ -23,7 +23,7 @@ set CARGO_PROFILE_RELEASE_LTO=false
 set CARGO_PROFILE_RELEASE_OPT_LEVEL=1
 
 echo [1/3] 安装前端依赖...
-call pnpm install
+call pnpm install --prefer-offline
 if %ERRORLEVEL% NEQ 0 (
     echo [错误] pnpm install 失败
     pause
