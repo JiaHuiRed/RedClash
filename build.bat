@@ -7,8 +7,8 @@ echo.
 
 cd /d "%~dp0"
 
-:: 杀掉正在运行的 RedClash 及 mihomo 进程，释放 exe 文件锁
-echo [0/3] 关闭正在运行的 RedClash...
+:: Kill running RedClash / mihomo to release the exe file lock before build
+echo [0/3] Stopping RedClash process...
 taskkill /F /IM red-clash.exe >nul 2>&1
 taskkill /F /IM mihomo.exe >nul 2>&1
 taskkill /F /IM clash-meta.exe >nul 2>&1
