@@ -14,6 +14,9 @@ taskkill /F /IM mihomo.exe >nul 2>&1
 taskkill /F /IM clash-meta.exe >nul 2>&1
 timeout /t 2 /nobreak >nul
 
+:: Skip corepack network check for pnpm binary (packageManager field in package.json)
+set COREPACK_ENABLE_STRICT=0
+
 :: 限制并行编译数，避免低内存机器 LLVM OOM
 set CARGO_BUILD_JOBS=1
 set NODE_OPTIONS=--max-old-space-size=4096
