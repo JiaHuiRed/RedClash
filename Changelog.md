@@ -2,6 +2,8 @@
 
 ## v0.0.9 (2026-06-18)
 
+- **Mihomo(Meta) 内核升级至 v1.19.27**
+
 ### 🐞 修复问题
 
 - **修复延迟测速双重测速导致节点超时率升高**（`proxy-groups.tsx`、`current-proxy-card.tsx`）：`delayGroup`（测速全组）与 `checkListDelay`（逐节点测速）原先通过 `Promise.race` 同时运行，每个节点同时被发起两份连接，对限速/限连的代理服务器雪上加霜；改为串行执行：先 `await delayGroup` 清除 fixed 选中状态，再执行 `checkListDelay` 渐进更新 UI
