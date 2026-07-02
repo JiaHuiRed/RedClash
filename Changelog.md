@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.0.10 (2026-07-02)
+
+### 🔨 构建 / CI
+
+- **上游同步 `tauri-plugin-mihomo` revert 分支**（`Cargo.toml`）：插件依赖由默认分支改为 `branch = "revert"`，避免上游回归引入冲突
+- **修复 Windows 节点切换慢**（`lib.rs`、`connections_stream.rs`、`speed_task.rs`）：上游 IPC pool + `ConnectionId`  rename 合入，Windows 下切换节点慢的根因消除
+- **关闭 Auto Build 定时任务**（`autobuild.yml`）：新增 cron `0 4,10 * * *` 对应的 schedule 注释说明（UTC 4:00/10:00 = 北京时间 12:00/18:00 触发），防止误开导致全平台构建通知轰炸
+
+---
+
 ## v0.0.9 (2026-06-18)
 
 ### 🐞 修复问题
