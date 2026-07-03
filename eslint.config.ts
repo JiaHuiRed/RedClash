@@ -13,6 +13,9 @@ import tseslint from 'typescript-eslint'
 
 export default defineConfig([
   {
+    ignores: ['tauri-plugin-mihomo-revert/**'],
+  },
+  {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
 
     plugins: {

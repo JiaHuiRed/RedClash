@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## v0.0.11 (2026-07-03)
+
+### 🐞 修复问题
+
+- **修复节点全部消失**（`tauri-plugin-mihomo-revert/src/models.rs`）：`ProxyType` 枚举缺少 `PassRule` 变体，mihomo 返回含 `PassRule` 类型的代理时整个 `/proxies` 响应反序列化失败，catch 块兜底导致代理页显示空；新增 `PassRule`，并加 `#[serde(other)] Unknown` 兜底防止未来版本新增类型再次触发同样问题
+- **修复 `Proxy` 可选字段缺失导致反序列化失败**（`tauri-plugin-mihomo-revert/src/models.rs`）：`alive`、`history`、`extra`、`interface`、`dialer-proxy`、`routing-mark` 等字段在部分代理类型中不存在于响应 JSON，加 `#[serde(default)]` 容错
+
+### 🔨 构建 / 依赖
+
+- **`tauri-plugin-mihomo` 改为本地路径**（`src-tauri/Cargo.toml`）：由 GitHub `branch = "revert"` 改为 `path = "../tauri-plugin-mihomo-revert"`，便于本地修改直接生效
+- **JS 插件同步切换本地版本**（`package.json`）：`tauri-plugin-mihomo-api` 由 GitHub 改为 `file:./tauri-plugin-mihomo-revert`
+- **build.bat 新增进程清理**：启动前额外 kill `verge-mihomo.exe` / `verge-mihomo-alpha.exe`
+
+---
+
 ## v0.0.10 (2026-07-02)
 
 ### 🔨 构建 / CI

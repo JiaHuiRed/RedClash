@@ -12,6 +12,8 @@ echo [0/3] Stopping RedClash process...
 taskkill /F /IM red-clash.exe >nul 2>&1
 taskkill /F /IM mihomo.exe >nul 2>&1
 taskkill /F /IM clash-meta.exe >nul 2>&1
+taskkill /F /IM verge-mihomo.exe >nul 2>&1
+taskkill /F /IM verge-mihomo-alpha.exe >nul 2>&1
 timeout /t 2 /nobreak >nul
 
 :: Skip corepack network check for pnpm binary (packageManager field in package.json)
