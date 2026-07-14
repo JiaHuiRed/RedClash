@@ -19,8 +19,8 @@ timeout /t 2 /nobreak >nul
 :: Skip corepack network check for pnpm binary (packageManager field in package.json)
 set COREPACK_ENABLE_STRICT=0
 
-:: 限制并行编译数，避免低内存机器 LLVM OOM
-set CARGO_BUILD_JOBS=1
+:: 限制并行编译数，避免低内存机器 LLVM OOM（本机 16G 内存，留些余量，别设太高）
+set CARGO_BUILD_JOBS=2
 set NODE_OPTIONS=--max-old-space-size=4096
 :: 覆盖 release profile 设置，降低内存峰值
 set CARGO_PROFILE_RELEASE_CODEGEN_UNITS=64
