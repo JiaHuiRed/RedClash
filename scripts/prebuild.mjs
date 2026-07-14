@@ -240,7 +240,7 @@ async function getLatestAlphaVersion() {
     await setCachedVersion('META_ALPHA_VERSION', META_ALPHA_VERSION)
   } catch (err) {
     log_error('Error fetching latest alpha version:', err.message)
-    process.exit(1)
+    throw err
   }
 }
 
@@ -272,7 +272,7 @@ async function getLatestReleaseVersion() {
     await setCachedVersion('META_VERSION', META_VERSION)
   } catch (err) {
     log_error('Error fetching latest release version:', err.message)
-    process.exit(1)
+    throw err
   }
 }
 
@@ -289,13 +289,18 @@ if (!META_ALPHA_MAP[`${platform}-${arch}`]) {
 // =======================
 // Build meta objects
 // =======================
+function sidecarTargetFile(prefix) {
+  const isWin = platform === 'win32'
+  return `${prefix}-${SIDECAR_HOST}${isWin ? '.exe' : ''}`
+}
+
 function clashMetaAlpha() {
   const name = META_ALPHA_MAP[`${platform}-${arch}`]
   const isWin = platform === 'win32'
   const urlExt = isWin ? 'zip' : 'gz'
   return {
     name: 'verge-mihomo-alpha',
-    targetFile: `verge-mihomo-alpha-${SIDECAR_HOST}${isWin ? '.exe' : ''}`,
+    targetFile: sidecarTargetFile('verge-mihomo-alpha'),
     exeFile: `${name}${isWin ? '.exe' : ''}`,
     zipFile: `${name}-${META_ALPHA_VERSION}.${urlExt}`,
     downloadURL: `${META_ALPHA_URL_PREFIX}/${name}-${META_ALPHA_VERSION}.${urlExt}`,
@@ -308,7 +313,7 @@ function clashMeta() {
   const urlExt = isWin ? 'zip' : 'gz'
   return {
     name: 'verge-mihomo',
-    targetFile: `verge-mihomo-${SIDECAR_HOST}${isWin ? '.exe' : ''}`,
+    targetFile: sidecarTargetFile('verge-mihomo'),
     exeFile: `${name}${isWin ? '.exe' : ''}`,
     zipFile: `${name}-${META_VERSION}.${urlExt}`,
     downloadURL: `${META_URL_PREFIX}/${META_VERSION}/${name}-${META_VERSION}.${urlExt}`,
@@ -594,7 +599,7 @@ async function getLatestServiceVersion() {
     await setCachedVersion('SERVICE_VERSION', SERVICE_VERSION)
   } catch (err) {
     log_error('Error fetching latest service version:', err.message)
-    process.exit(1)
+    throw err
   }
 }
 
@@ -707,14 +712,28 @@ const resolveUnSetDnsScript = () =>
 const tasks = [
   {
     name: 'verge-mihomo-alpha',
-    func: () =>
-      getLatestAlphaVersion().then(() => resolveSidecar(clashMetaAlpha())),
+    func: () => {
+      const targetFile = sidecarTargetFile('verge-mihomo-alpha')
+      if (!FORCE && fs.existsSync(path.join(SIDECAR_DIR, targetFile))) {
+        log_success(`"verge-mihomo-alpha" already exists, skipping download`)
+        return
+      }
+      return getLatestAlphaVersion().then(() =>
+        resolveSidecar(clashMetaAlpha()),
+      )
+    },
     retry: 5,
   },
   {
     name: 'verge-mihomo',
-    func: () =>
-      getLatestReleaseVersion().then(() => resolveSidecar(clashMeta())),
+    func: () => {
+      const targetFile = sidecarTargetFile('verge-mihomo')
+      if (!FORCE && fs.existsSync(path.join(SIDECAR_DIR, targetFile))) {
+        log_success(`"verge-mihomo" already exists, skipping download`)
+        return
+      }
+      return getLatestReleaseVersion().then(() => resolveSidecar(clashMeta()))
+    },
     retry: 5,
   },
   { name: 'service', func: resolveServiceBundle, retry: 5 },

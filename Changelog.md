@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.0.12 (2026-07-14)
+
+### 🐞 修复问题
+
+- **修复 `prebuild.mjs` 网络异常时进程直接退出**（`scripts/prebuild.mjs`）：`getLatestAlphaVersion`/`getLatestReleaseVersion`/`getLatestServiceVersion` 请求 GitHub 版本号失败时用 `process.exit(1)` 直接杀进程，绕过了任务调度器本该有的 5 次重试机制，导致一次网络抖动就让 `pnpm build` 整体报错退出；改为 `throw err`，让重试机制真正生效
+
+### ⚡ 优化
+
+- **跳过已存在内核的多余版本请求**（`scripts/prebuild.mjs`）：`verge-mihomo`/`verge-mihomo-alpha` 任务此前会无条件先请求最新版本号才检查本地文件是否已存在；现在先检查本地文件，已存在则直接跳过，不再发起网络请求
+
 ## v0.0.11 (2026-07-03)
 
 ### 🐞 修复问题
