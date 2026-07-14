@@ -35,7 +35,7 @@ async function resolveUpdater() {
 
   const updateData = {
     name: tag.name,
-    notes: await resolveUpdateLog(tag.name), // use Changelog.md
+    notes: await resolveUpdateLog(tag.name), // use CHANGELOG.md
     pub_date: new Date().toISOString(),
     platforms: {
       'windows-x86_64': { signature: '', url: '' },

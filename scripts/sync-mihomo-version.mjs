@@ -4,7 +4,7 @@ import path from 'node:path'
 
 const VERSION_URL =
   'https://github.com/MetaCubeX/mihomo/releases/latest/download/version.txt'
-const DEFAULT_CHANGELOG = 'Changelog.md'
+const DEFAULT_CHANGELOG = 'CHANGELOG.md'
 
 const args = process.argv.slice(2)
 const CHECK = args.includes('--check')

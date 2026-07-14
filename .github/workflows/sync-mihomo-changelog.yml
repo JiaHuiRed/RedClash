@@ -35,12 +35,12 @@ jobs:
       - name: Detect changelog changes
         id: changes
         run: |
-          if git diff --quiet -- Changelog.md; then
+          if git diff --quiet -- CHANGELOG.md; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          mihomo_version="$(grep -Eo 'Mihomo\(Meta\).*v[0-9]+(\.[0-9]+)+' Changelog.md | grep -Eo 'v[0-9]+(\.[0-9]+)+' | head -n 1)"
+          mihomo_version="$(grep -Eo 'Mihomo\(Meta\).*v[0-9]+(\.[0-9]+)+' CHANGELOG.md | grep -Eo 'v[0-9]+(\.[0-9]+)+' | head -n 1)"
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "mihomo_version=$mihomo_version" >> "$GITHUB_OUTPUT"
 
@@ -53,13 +53,13 @@ jobs:
         run: |
           branch="chore/sync-mihomo-changelog"
           title="chore: sync Mihomo changelog to ${MIHOMO_VERSION}"
-          body="Automated update for the Mihomo core version recorded in Changelog.md."
+          body="Automated update for the Mihomo core version recorded in CHANGELOG.md."
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin "$branch:refs/remotes/origin/$branch" || true
           git checkout -B "$branch"
-          git add Changelog.md
+          git add CHANGELOG.md
           git commit -m "$title"
           git push --force-with-lease origin "$branch"
 
