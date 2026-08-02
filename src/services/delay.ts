@@ -26,6 +26,9 @@ class DelayManager {
   // 每个分组的监听
   private groupListenerMap = new Map<string, () => void>()
 
+  // 每个分组在途的批量测试数，批量结束前不通知分组（防排序抖动）
+  private activeBatches = new Map<string, number>()
+
   private pendingItemUpdates = new Map<string, DelayUpdate[]>()
   private pendingGroupUpdates = new Set<string>()
   private itemFlushScheduled = false
@@ -98,6 +101,8 @@ class DelayManager {
   }
 
   private queueGroupNotification(group: string) {
+    // 批量测试进行中不通知：排序从半测的组重排是设计上要避免的
+    if ((this.activeBatches.get(group) ?? 0) > 0) return
     this.pendingGroupUpdates.add(group)
     this.scheduleGroupFlush()
   }
@@ -248,7 +253,9 @@ class DelayManager {
       const elapsed = elapsedTime
       debugLog(`[DelayManager] 延迟测试完成，代理: ${name}, 结果: ${delay}ms`)
 
-      return this.setDelay(name, group, delay, { elapsed })
+      const update = this.setDelay(name, group, delay, { elapsed })
+      this.queueGroupNotification(group)
+      return update
     } catch (error) {
       // 确保至少显示500ms的加载动画
       await new Promise((resolve) => setTimeout(resolve, 500))
@@ -256,7 +263,9 @@ class DelayManager {
       const delay = 1e6 // error
       const elapsed = Date.now() - startTime
 
-      return this.setDelay(name, group, delay, { elapsed })
+      const update = this.setDelay(name, group, delay, { elapsed })
+      this.queueGroupNotification(group)
+      return update
     }
   }
 
@@ -270,12 +279,13 @@ class DelayManager {
       `[DelayManager] 批量测试延迟开始，组: ${group}, 数量: ${nameList.length}, 并发数: ${concurrency}`,
     )
     const names = nameList.filter(Boolean)
+    // 批量测试开始，分组计数 +1（结束前不通知分组，防排序抖动）
+    this.activeBatches.set(group, (this.activeBatches.get(group) ?? 0) + 1)
     // 设置正在延迟测试中
     names.forEach((name) => this.setDelay(name, group, -2))
 
     let index = 0
     const startTime = Date.now()
-    const listener = this.groupListenerMap.get(group)
 
     const help = async (): Promise<void> => {
       const currName = names[index++]
@@ -294,9 +304,6 @@ class DelayManager {
         }
 
         await this.checkDelay(currName, group, timeout)
-        if (listener) {
-          this.queueGroupNotification(group)
-        }
       } catch (error) {
         console.error(
           `[DelayManager] 批量测试单个代理出错，代理: ${currName}`,
@@ -318,7 +325,19 @@ class DelayManager {
       promiseList.push(help())
     }
 
-    await Promise.all(promiseList)
+    try {
+      await Promise.all(promiseList)
+    } finally {
+      // 用 finally 保证批量结束必通知分组：
+      // 否则中途抛错会让节点停在 testing 态（-2）且排序不刷新
+      const remaining = (this.activeBatches.get(group) ?? 1) - 1
+      if (remaining > 0) {
+        this.activeBatches.set(group, remaining)
+      } else {
+        this.activeBatches.delete(group)
+        this.queueGroupNotification(group)
+      }
+    }
     const totalTime = Date.now() - startTime
     debugLog(
       `[DelayManager] 批量测试延迟完成，组: ${group}, 总耗时: ${totalTime}ms`,
