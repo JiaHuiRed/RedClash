@@ -577,11 +577,14 @@ export const CurrentProxyCard = () => {
       debugLog(
         `[CurrentProxyCard] 自动检测当前节点延迟，组: ${groupName}, 节点: ${proxyName}`,
       )
-      if (proxyRecord.provider) {
-        await healthcheckProxyProvider(proxyRecord.provider)
-      } else {
-        await delayManager.checkDelay(proxyName, groupName, timeout)
-      }
+      // provider 节点走 mihomo 原生单节点健康检查（只测当前节点，比整体测快得多），
+      // 其余走普通 delay API；统一由 delayManager 内部路由
+      await delayManager.checkDelay(
+        proxyName,
+        groupName,
+        timeout,
+        proxyRecord.provider,
+      )
     } catch (error) {
       console.error(
         `[CurrentProxyCard] 自动检测当前节点延迟失败，组: ${groupName}, 节点: ${proxyName}`,

@@ -1,4 +1,8 @@
-import { delayProxyByName, ProxyDelay } from 'tauri-plugin-mihomo-api'
+import {
+  delayProxyByName,
+  healthcheckNodeInProvider,
+  ProxyDelay,
+} from 'tauri-plugin-mihomo-api'
 
 import { debugLog } from '@/utils/debug'
 
@@ -202,6 +206,7 @@ class DelayManager {
     name: string,
     group: string,
     timeout: number,
+    providerName?: string,
   ): Promise<DelayUpdate> {
     debugLog(
       `[DelayManager] 开始测试延迟，代理: ${name}, 组: ${group}, 超时: ${timeout}ms`,
@@ -224,8 +229,12 @@ class DelayManager {
       })
 
       // 使用Promise.race来实现超时控制
+      // provider 订阅节点走 mihomo 原生 provider 健康检查（healthcheck），
+      // 结果与 URL test group 实际选路一致；普通节点走 /proxies/{name}/delay
       const result = await Promise.race([
-        delayProxyByName(name, url, timeout),
+        providerName
+          ? healthcheckNodeInProvider(providerName, name, url, timeout)
+          : delayProxyByName(name, url, timeout),
         timeoutPromise,
       ])
 

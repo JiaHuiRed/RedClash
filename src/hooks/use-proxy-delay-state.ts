@@ -74,7 +74,14 @@ export function useProxyDelayState(
 
   const onDelay = useLockFn(async () => {
     setDelayState({ delay: -2, updatedAt: Date.now() })
-    setDelayState(await delayManager.checkDelay(proxy.name, groupName, timeout))
+    setDelayState(
+      await delayManager.checkDelay(
+        proxy.name,
+        groupName,
+        timeout,
+        proxy.provider,
+      ),
+    )
   })
 
   return {
