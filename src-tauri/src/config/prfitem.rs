@@ -384,8 +384,20 @@ impl PrfItem {
         // process the charset "UTF-8 with BOM"
         let data = data.trim_start_matches('\u{feff}');
 
-        // check the data whether the valid yaml format
-        let yaml = serde_yaml_ng::from_str::<Mapping>(data).context("the remote profile data is invalid yaml")?;
+        // parse as clash yaml; fall back to vless share-link subscription conversion.
+        // Some subscription endpoints only serve plain/base64 `vless://` lines, which
+        // serde_yaml_ng cannot parse, so we translate them into a complete clash yaml.
+        let (data, yaml) = match serde_yaml_ng::from_str::<Mapping>(data) {
+            Ok(yaml) => (data.to_string(), yaml),
+            Err(_) => match crate::config::convert::convert_share_link(data) {
+                Some(converted) => {
+                    let yaml = serde_yaml_ng::from_str::<Mapping>(&converted)
+                        .context("the remote profile data is invalid yaml after conversion")?;
+                    (converted, yaml)
+                }
+                None => bail!("the remote profile data is invalid yaml"),
+            },
+        };
 
         if !yaml.contains_key("proxies") && !yaml.contains_key("proxy-providers") {
             bail!("profile does not contain `proxies` or `proxy-providers`");

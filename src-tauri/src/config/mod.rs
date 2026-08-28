@@ -1,6 +1,7 @@
 mod clash;
 #[allow(clippy::module_inception)]
 mod config;
+mod convert;
 mod encrypt;
 mod prfitem;
 pub mod profiles;
