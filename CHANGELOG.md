@@ -5,6 +5,11 @@
 ### 🐞 修复问题
 
 - **修复订阅节点显示不全**（`src-tauri/src/utils/network.rs`）：fork 改品牌名时把默认 User-Agent 一并改成了 `red-clash/v{version}`，而 v2board/Xboard 类机场按 UA 名字白名单下发订阅，遇到不认识的 UA 只返回降级内容（空节点或「请立即到官网下载新客户端」这类广告假节点）。实测同一订阅链接：`red-clash/v0.0.12` 只拿到 9 行节点、`clash-verge/v2.4.2` 拿到 18 行；且 `clash-verge/v0.0.12` 与 `clash-verge/v2.4.2` 返回字节数完全相同，说明服务端只认 UA 名字、不看版本号。默认 UA 改回 `clash-verge/v{version}`（同仓 `backup.rs` 的 WebDAV UA 本就是这个格式，未受影响）
+- **修复批量测速中途抛错残留 testing 态**（`src/services/delay.ts`、`src/hooks/use-proxy-delay-state.ts`、`src/components/home/current-proxy-card.tsx`）：`checkDelay` 单测完成即通知分组以便排序即时刷新，批量进行中由 `activeBatches` 门控抑制逐节点通知防排序抖动，并用 `Promise.all().finally()` 保证批量结束必通知分组
+
+### ⚡ 优化
+
+- **provider 节点测速改走 mihomo 原生 healthcheck**（`src/services/delay.ts`）：普通 `/proxies/{name}/delay` 测的是单次瞬时延迟，与 URL test group 的实际选路不一致；订阅（provider）节点改用原生单节点健康检查 `healthcheckNodeInProvider`，测速结果与选路一致。自动检测也从整体 `healthcheckProxyProvider`（测整个订阅）简化为单节点测，快一个量级
 
 ## v0.0.12 (2026-07-14)
 
