@@ -278,7 +278,10 @@ impl NetworkManager {
         } else {
             headers.insert(
                 USER_AGENT,
-                HeaderValue::from_str(&format!("red-clash/v{}", env!("CARGO_PKG_VERSION")))?,
+                // 注意：机场订阅接口（v2board/Xboard）按 UA 白名单返回内容，
+                // 不认识的客户端名会静默返回降级内容（空节点/广告节点）。
+                // 实测名字是唯一判据、版本号无关，因此这里必须沿用上游 clash-verge 名。
+                HeaderValue::from_str(&format!("clash-verge/v{}", env!("CARGO_PKG_VERSION")))?,
             );
         }
 

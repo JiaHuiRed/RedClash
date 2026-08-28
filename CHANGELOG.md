@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.1.0 (2026-08-28)
+
+### 🐞 修复问题
+
+- **修复订阅节点显示不全**（`src-tauri/src/utils/network.rs`）：fork 改品牌名时把默认 User-Agent 一并改成了 `red-clash/v{version}`，而 v2board/Xboard 类机场按 UA 名字白名单下发订阅，遇到不认识的 UA 只返回降级内容（空节点或「请立即到官网下载新客户端」这类广告假节点）。实测同一订阅链接：`red-clash/v0.0.12` 只拿到 9 行节点、`clash-verge/v2.4.2` 拿到 18 行；且 `clash-verge/v0.0.12` 与 `clash-verge/v2.4.2` 返回字节数完全相同，说明服务端只认 UA 名字、不看版本号。默认 UA 改回 `clash-verge/v{version}`（同仓 `backup.rs` 的 WebDAV UA 本就是这个格式，未受影响）
+
 ## v0.0.12 (2026-07-14)
 
 ### 🐞 修复问题
