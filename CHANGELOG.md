@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.1.1 (2026-08-28)
+
+### ⚡ 优化
+
+- **vless 分享直链订阅本地转换**（`src-tauri/src/config/convert.rs` 新增、`src-tauri/src/config/prfitem.rs`）：只返回 base64 `vless://` 分享直链（非 clash yaml）的机场订阅，此前 yaml 解析直接失败、节点显示为空。现 `from_url` 在 yaml 解析失败时兜底：识别明文/整体 base64/逐行 base64 三种直链形态，逐条解析 vless 参数（tls/ws/grpc/reality/alpn/fingerprint/sni 映射为 mihomo 字段），组装含 `[Global]` 选择组与 `MATCH` 规则的完整 clash yaml 存盘。常规 clash 订阅不受影响
+
+### 🔨 构建 / 依赖
+
+- **修复 pnpm-lock 缺失 `@tauri-apps/cli` 平台二进制**（`pnpm-lock.yaml`）：lock 历史生成异常导致 `@tauri-apps/cli@2.11.2` 条目缺 optionalDependencies 平台包记录，`pnpm dev` 报 `Cannot find module './cli.win32-x64-msvc.node'`；`pnpm update '@tauri-apps/cli@2.11.2'` 强制重解析补齐
+
 ## v0.1.0 (2026-08-28)
 
 ### 🐞 修复问题
