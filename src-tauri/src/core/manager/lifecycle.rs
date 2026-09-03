@@ -20,7 +20,7 @@ impl CoreManager {
 
         match *self.get_running_mode() {
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
-        RunningMode::Service => self.start_core_by_service().await,
+            RunningMode::Service => self.start_core_by_service().await,
             RunningMode::NotRunning | RunningMode::Sidecar => self.start_core_by_sidecar().await,
         }
     }
@@ -33,7 +33,7 @@ impl CoreManager {
 
         match *self.get_running_mode() {
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
-        RunningMode::Service => self.stop_core_by_service().await,
+            RunningMode::Service => self.stop_core_by_service().await,
             RunningMode::Sidecar => {
                 self.stop_core_by_sidecar();
                 Ok(())
