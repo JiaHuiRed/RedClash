@@ -1,6 +1,8 @@
 use super::CmdResult;
 use super::StringifyErr as _;
 use crate::cmd::validate::{ValidationNoticeTarget, handle_validation_notice};
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::tray::Tray;
 use crate::utils::window_manager::WindowManager;
 use crate::{
     config::{
@@ -15,8 +17,6 @@ use crate::{
     feat,
     utils::{dirs, help},
 };
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-use crate::core::tray::Tray;
 use clash_verge_draft::SharedDraft;
 use clash_verge_logging::{Type, logging};
 use scopeguard::defer;

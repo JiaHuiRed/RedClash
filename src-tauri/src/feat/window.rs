@@ -1,7 +1,7 @@
 use crate::config::Config;
-use crate::core::{CoreManager, handle};
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use crate::core::sysopt;
+use crate::core::{CoreManager, handle};
 use crate::module::lightweight;
 use crate::utils;
 use crate::utils::window_manager::WindowManager;

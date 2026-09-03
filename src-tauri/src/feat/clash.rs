@@ -1,3 +1,5 @@
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::tray;
 use crate::{
     config::Config,
     core::{CoreManager, handle},
@@ -5,8 +7,6 @@ use crate::{
     process::AsyncHandler,
     utils,
 };
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-use crate::core::tray;
 use bytes::BytesMut;
 use clash_verge_logging::{Type, logging};
 use once_cell::sync::Lazy;

@@ -65,7 +65,6 @@ pub async fn build_new_window() -> Result<WebviewWindow, String> {
         tauri::WebviewUrl::App(start_page.into()),
     )
     .title("RedClash")
-
     .inner_size(DEFAULT_WIDTH, DEFAULT_HEIGHT)
     .min_inner_size(MINIMAL_WIDTH, MINIMAL_HEIGHT)
     .visible(false) // 等待主题色准备好后再展示，避免启动色差

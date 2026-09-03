@@ -1,10 +1,6 @@
-use crate::{
-    config::Config,
-    core::timer::Timer,
-    process::AsyncHandler,
-};
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use crate::core::tray::Tray;
+use crate::{config::Config, core::timer::Timer, process::AsyncHandler};
 
 use clash_verge_logging::{Type, logging};
 

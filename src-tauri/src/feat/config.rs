@@ -1,10 +1,10 @@
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::{autostart, hotkey, sysopt, tray};
 use crate::{
     config::{Config, IVerge},
     core::{CoreManager, handle, logger::Logger},
     module::{auto_backup::AutoBackupManager, lightweight},
 };
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-use crate::core::{autostart, hotkey, sysopt, tray};
 use anyhow::Result;
 use bitflags::bitflags;
 use clash_verge_draft::SharedDraft;

@@ -151,11 +151,7 @@ impl GuardMonitor {
         self.guard_type = guard_type;
     }
 
-    #[cfg(any(
-        target_os = "linux",
-        target_os = "macos",
-        target_os = "windows"
-    ))]
+    #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
     #[inline]
     fn guard_sysproxy_static(sysproxy: &Sysproxy) {
         if let Ok(actually_sysproxy) = Sysproxy::get_system_proxy()
@@ -172,11 +168,7 @@ impl GuardMonitor {
         }
     }
 
-    #[cfg(any(
-        target_os = "linux",
-        target_os = "macos",
-        target_os = "windows"
-    ))]
+    #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
     #[inline]
     fn guard_autoproxy_static(autoproxy: &Autoproxy) {
         if let Ok(actually_autoproxy) = Autoproxy::get_auto_proxy()
@@ -322,10 +314,7 @@ mod tests {
             enable: true,
         };
 
-        let guard_monitor = GuardMonitor::new(
-            GuardType::Autoproxy(target_auto_proxy),
-            Duration::from_secs(3),
-        );
+        let guard_monitor = GuardMonitor::new(GuardType::Autoproxy(target_auto_proxy), Duration::from_secs(3));
 
         assert!(!guard_monitor.get_state().is_running());
     }
@@ -339,8 +328,7 @@ mod tests {
             bypass: "localhost".to_string(),
         };
 
-        let guard_monitor =
-            GuardMonitor::new(GuardType::Sysproxy(sysproxy), Duration::from_secs(5));
+        let guard_monitor = GuardMonitor::new(GuardType::Sysproxy(sysproxy), Duration::from_secs(5));
 
         assert!(!guard_monitor.get_state().is_running());
     }
@@ -352,10 +340,7 @@ mod tests {
             enable: true,
         };
 
-        let guard_monitor = GuardMonitor::new(
-            GuardType::Autoproxy(target_auto_proxy),
-            Duration::from_millis(100),
-        );
+        let guard_monitor = GuardMonitor::new(GuardType::Autoproxy(target_auto_proxy), Duration::from_millis(100));
 
         let monitor = Arc::new(guard_monitor);
         let monitor_clone = Arc::clone(&monitor);
@@ -382,10 +367,7 @@ mod tests {
             enable: true,
         };
 
-        let mut guard_monitor = GuardMonitor::new(
-            GuardType::Autoproxy(target_auto_proxy),
-            Duration::from_secs(3),
-        );
+        let mut guard_monitor = GuardMonitor::new(GuardType::Autoproxy(target_auto_proxy), Duration::from_secs(3));
 
         guard_monitor.set_interval(Duration::from_secs(5));
     }
@@ -397,10 +379,7 @@ mod tests {
             enable: true,
         };
 
-        let mut guard_monitor = GuardMonitor::new(
-            GuardType::Autoproxy(initial_auto_proxy),
-            Duration::from_secs(3),
-        );
+        let mut guard_monitor = GuardMonitor::new(GuardType::Autoproxy(initial_auto_proxy), Duration::from_secs(3));
 
         let new_sysproxy = Sysproxy {
             enable: true,
@@ -419,10 +398,7 @@ mod tests {
             enable: true,
         };
 
-        let guard_monitor = GuardMonitor::new(
-            GuardType::Autoproxy(target_auto_proxy),
-            Duration::from_secs(1),
-        );
+        let guard_monitor = GuardMonitor::new(GuardType::Autoproxy(target_auto_proxy), Duration::from_secs(1));
 
         // This will call guard_autoproxy internally
         if let GuardType::Autoproxy(ref autoproxy) = guard_monitor.guard_type {
@@ -440,8 +416,7 @@ mod tests {
             bypass: "localhost,127.0.0.1".to_string(),
         };
 
-        let guard_monitor =
-            GuardMonitor::new(GuardType::Sysproxy(sysproxy), Duration::from_secs(2));
+        let guard_monitor = GuardMonitor::new(GuardType::Sysproxy(sysproxy), Duration::from_secs(2));
 
         if let GuardType::Sysproxy(ref proxy) = guard_monitor.guard_type {
             assert_eq!(proxy.host, "proxy.example.com");
@@ -457,10 +432,7 @@ mod tests {
             enable: false,
         };
 
-        let guard_monitor = GuardMonitor::new(
-            GuardType::Autoproxy(disabled_autoproxy),
-            Duration::from_secs(1),
-        );
+        let guard_monitor = GuardMonitor::new(GuardType::Autoproxy(disabled_autoproxy), Duration::from_secs(1));
 
         if let GuardType::Autoproxy(ref autoproxy) = guard_monitor.guard_type {
             assert!(!autoproxy.enable);
@@ -476,10 +448,7 @@ mod tests {
             bypass: "localhost".to_string(),
         };
 
-        let guard_monitor = GuardMonitor::new(
-            GuardType::Sysproxy(disabled_sysproxy),
-            Duration::from_secs(1),
-        );
+        let guard_monitor = GuardMonitor::new(GuardType::Sysproxy(disabled_sysproxy), Duration::from_secs(1));
 
         if let GuardType::Sysproxy(ref proxy) = guard_monitor.guard_type {
             assert!(!proxy.enable);
@@ -498,10 +467,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_state_transition_stopped_to_running() {
-        let monitor = Arc::new(GuardMonitor::new(
-            GuardType::None,
-            Duration::from_millis(50),
-        ));
+        let monitor = Arc::new(GuardMonitor::new(GuardType::None, Duration::from_millis(50)));
 
         assert!(monitor.get_state().is_stopped());
 
@@ -518,10 +484,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_cannot_start_while_running() {
-        let monitor = Arc::new(GuardMonitor::new(
-            GuardType::None,
-            Duration::from_millis(50),
-        ));
+        let monitor = Arc::new(GuardMonitor::new(GuardType::None, Duration::from_millis(50)));
 
         monitor.start();
 
@@ -540,10 +503,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_cannot_start_while_pending() {
-        let monitor = Arc::new(GuardMonitor::new(
-            GuardType::None,
-            Duration::from_millis(100),
-        ));
+        let monitor = Arc::new(GuardMonitor::new(GuardType::None, Duration::from_millis(100)));
 
         monitor.start();
 
@@ -560,10 +520,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_stop_while_pending() {
-        let monitor = Arc::new(GuardMonitor::new(
-            GuardType::None,
-            Duration::from_millis(200),
-        ));
+        let monitor = Arc::new(GuardMonitor::new(GuardType::None, Duration::from_millis(200)));
 
         monitor.start();
 
@@ -577,10 +534,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_multiple_stop_calls() {
-        let monitor = Arc::new(GuardMonitor::new(
-            GuardType::None,
-            Duration::from_millis(50),
-        ));
+        let monitor = Arc::new(GuardMonitor::new(GuardType::None, Duration::from_millis(50)));
 
         monitor.start();
 
@@ -642,10 +596,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_concurrent_start_attempts() {
-        let monitor = Arc::new(GuardMonitor::new(
-            GuardType::None,
-            Duration::from_millis(100),
-        ));
+        let monitor = Arc::new(GuardMonitor::new(GuardType::None, Duration::from_millis(100)));
 
         let mut handles = vec![];
 
@@ -677,10 +628,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_restart_after_stop() {
-        let monitor = Arc::new(GuardMonitor::new(
-            GuardType::None,
-            Duration::from_millis(50),
-        ));
+        let monitor = Arc::new(GuardMonitor::new(GuardType::None, Duration::from_millis(50)));
 
         // First start
         monitor.start();
@@ -705,10 +653,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_drop_stops_monitor() {
-        let monitor = Arc::new(GuardMonitor::new(
-            GuardType::None,
-            Duration::from_millis(50),
-        ));
+        let monitor = Arc::new(GuardMonitor::new(GuardType::None, Duration::from_millis(50)));
 
         monitor.start();
 
@@ -755,10 +700,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_send_across_threads() {
-        let monitor = Arc::new(GuardMonitor::new(
-            GuardType::None,
-            Duration::from_millis(50),
-        ));
+        let monitor = Arc::new(GuardMonitor::new(GuardType::None, Duration::from_millis(50)));
 
         // Spawn multiple tasks across different threads
         let mut handles = vec![];

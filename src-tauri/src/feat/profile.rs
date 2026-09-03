@@ -1,11 +1,11 @@
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::tray;
 use crate::{
     cmd,
     config::{Config, PrfItem, PrfOption, profiles::profiles_draft_update_item_safe},
     core::{CoreManager, handle, validate::ValidationOutcome},
     utils::help::{mask_err, mask_url},
 };
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-use crate::core::tray;
 use anyhow::{Result, bail};
 use clash_verge_logging::{Type, logging, logging_error};
 use smartstring::alias::String;

@@ -17,12 +17,12 @@ use flexi_logger::{
 use log::{Level, LevelFilter, Record};
 use parking_lot::{Mutex, RwLock};
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::service;
 use crate::{
     singleton,
     utils::dirs::{self, service_log_dir, sidecar_log_dir},
 };
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-use crate::core::service;
 
 pub struct Logger {
     handle: Arc<Mutex<Option<LoggerHandle>>>,

@@ -1,4 +1,6 @@
 use super::{IClashTemp, IProfiles, IVerge};
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::{service, tray};
 use crate::{
     config::{PrfItem, profiles_append_item_safe, runtime::IRuntime},
     constants::{files, timing},
@@ -11,8 +13,6 @@ use crate::{
     process::AsyncHandler,
     utils::{dirs, help},
 };
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-use crate::core::{service, tray};
 use anyhow::{Result, anyhow};
 use backon::{ExponentialBuilder, Retryable as _};
 use clash_verge_draft::Draft;

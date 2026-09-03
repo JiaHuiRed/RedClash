@@ -2,6 +2,13 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use anyhow::Result;
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::{
+    hotkey::Hotkey,
+    service::{SERVICE_MANAGER, ServiceManager, is_service_ipc_path_exists},
+    sysopt,
+    tray::Tray,
+};
 use crate::{
     config::Config,
     core::{CoreManager, Timer, handle::Handle, logger::Logger},
@@ -9,13 +16,6 @@ use crate::{
     module::{auto_backup::AutoBackupManager, lightweight::auto_lightweight_boot},
     process::AsyncHandler,
     utils::{init, server, window_manager::WindowManager},
-};
-#[cfg(not(any(target_os = "android", target_os = "ios")))]
-use crate::core::{
-    hotkey::Hotkey,
-    service::{SERVICE_MANAGER, ServiceManager, is_service_ipc_path_exists},
-    sysopt,
-    tray::Tray,
 };
 use clash_verge_logging::{Type, logging, logging_error};
 use clash_verge_signal;

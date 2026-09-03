@@ -347,6 +347,8 @@ pub fn run() {
         .invoke_handler(app_init::generate_handlers());
 
     mod event_handlers {
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        use crate::core::hotkey;
         #[cfg(target_os = "macos")]
         use crate::module::lightweight;
         use crate::utils::window_manager::WindowManager;
@@ -355,8 +357,6 @@ pub fn run() {
             core::{self, handle},
             process::AsyncHandler,
         };
-        #[cfg(not(any(target_os = "android", target_os = "ios")))]
-        use crate::core::hotkey;
         use clash_verge_logging::{Type, logging};
         use tauri::AppHandle;
         #[cfg(target_os = "macos")]
