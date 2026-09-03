@@ -4,19 +4,18 @@ use anyhow::Result;
 
 use crate::{
     config::Config,
-    core::{
-        CoreManager, Timer,
-        handle::Handle,
-        hotkey::Hotkey,
-        logger::Logger,
-        service::{SERVICE_MANAGER, ServiceManager, is_service_ipc_path_exists},
-        sysopt,
-        tray::Tray,
-    },
+    core::{CoreManager, Timer, handle::Handle, logger::Logger},
     feat,
     module::{auto_backup::AutoBackupManager, lightweight::auto_lightweight_boot},
     process::AsyncHandler,
     utils::{init, server, window_manager::WindowManager},
+};
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::{
+    hotkey::Hotkey,
+    service::{SERVICE_MANAGER, ServiceManager, is_service_ipc_path_exists},
+    sysopt,
+    tray::Tray,
 };
 use clash_verge_logging::{Type, logging, logging_error};
 use clash_verge_signal;
@@ -55,6 +54,7 @@ pub fn resolve_setup_async() {
         Config::verify_config_initialization().await;
         init_window().await;
 
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         let core_init = AsyncHandler::spawn(|| async {
             init_service_manager().await;
             init_core_manager().await;
@@ -62,6 +62,12 @@ pub fn resolve_setup_async() {
             init_system_proxy_guard().await;
         });
 
+        #[cfg(any(target_os = "android", target_os = "ios"))]
+        let core_init = AsyncHandler::spawn(|| async {
+            init_core_manager().await;
+        });
+
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         let _ = futures::join!(
             core_init,
             init_tray(),
@@ -71,13 +77,23 @@ pub fn resolve_setup_async() {
             init_auto_backup(),
         );
 
+        #[cfg(any(target_os = "android", target_os = "ios"))]
+        let _ = futures::join!(
+            core_init,
+            init_timer(),
+            init_auto_lightweight_boot(),
+            init_auto_backup(),
+        );
+
         Handle::refresh_clash();
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         refresh_tray_menu().await;
         resolve_done();
     });
 }
 
 pub async fn resolve_reset_async() -> Result<(), anyhow::Error> {
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     sysopt::Sysopt::global().reset_sysproxy().await?;
     CoreManager::global().stop_core().await?;
 
@@ -115,6 +131,7 @@ pub(super) async fn init_timer() {
     logging_error!(Type::Setup, Timer::global().init().await);
 }
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub(super) async fn init_hotkey() {
     // if hotkey is not use by global, skip init it
     let skip_register_hotkeys = !Config::verge().await.latest_arc().enable_global_hotkey.unwrap_or(true);
@@ -138,6 +155,7 @@ pub async fn init_work_config() {
     logging_error!(Type::Setup, init::init_config().await);
 }
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub(super) async fn init_tray() {
     logging_error!(Type::Setup, Tray::global().init().await);
 }
@@ -146,6 +164,7 @@ pub(super) async fn init_verge_config() {
     logging_error!(Type::Setup, Config::init_config().await);
 }
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub(super) async fn init_service_manager() {
     clash_verge_service_ipc::set_config(Some(ServiceManager::config())).await;
     if is_service_ipc_path_exists() && SERVICE_MANAGER.init().await.is_ok() {
@@ -157,14 +176,17 @@ pub(super) async fn init_core_manager() {
     logging_error!(Type::Setup, CoreManager::global().init().await);
 }
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub(super) async fn init_system_proxy() {
     logging_error!(Type::Setup, sysopt::Sysopt::global().update_sysproxy().await);
 }
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub(super) async fn init_system_proxy_guard() {
     sysopt::Sysopt::global().refresh_guard().await;
 }
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub(super) async fn refresh_tray_menu() {
     logging_error!(Type::Setup, Tray::global().update_part().await);
 }

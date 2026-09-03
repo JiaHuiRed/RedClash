@@ -74,11 +74,7 @@ fn decode_body(data: &str) -> Option<String> {
         out.push('\n');
     }
 
-    if any {
-        Some(out)
-    } else {
-        None
-    }
+    if any { Some(out) } else { None }
 }
 
 /// 从明文多行文本中逐行解析出 vless proxy mapping 列表。
@@ -92,11 +88,7 @@ fn parse_vless_links(plain: &str) -> Option<Vec<Mapping>> {
             }
         }
     }
-    if proxies.is_empty() {
-        None
-    } else {
-        Some(proxies)
-    }
+    if proxies.is_empty() { None } else { Some(proxies) }
 }
 
 /// 解析单条 `vless://` 链接为 clash vless proxy mapping。
@@ -237,11 +229,7 @@ fn frag_to_name(frag: Option<&str>) -> Option<String> {
         decoded
     };
     let name = name.trim().to_string();
-    if name.is_empty() {
-        None
-    } else {
-        Some(name)
-    }
+    if name.is_empty() { None } else { Some(name) }
 }
 
 /// 组装成完整 clash yaml（proxies + proxy-group + rules），供客户端直接消费。
@@ -250,7 +238,11 @@ fn build_full_config(proxies: &[Mapping]) -> Mapping {
 
     let names: Vec<Value> = proxies
         .iter()
-        .filter_map(|p| p.get("name").and_then(|v| v.as_str()).map(|s| Value::from(s.to_string())))
+        .filter_map(|p| {
+            p.get("name")
+                .and_then(|v| v.as_str())
+                .map(|s| Value::from(s.to_string()))
+        })
         .collect();
 
     let mut group = Mapping::new();
@@ -260,7 +252,10 @@ fn build_full_config(proxies: &[Mapping]) -> Mapping {
 
     let mut root = Mapping::new();
     root.insert(Value::from("proxies"), Value::Sequence(proxy_seq));
-    root.insert(Value::from("proxy-groups"), Value::Sequence(vec![Value::Mapping(group)]));
+    root.insert(
+        Value::from("proxy-groups"),
+        Value::Sequence(vec![Value::Mapping(group)]),
+    );
     root.insert(
         Value::from("rules"),
         Value::Sequence(vec![Value::from(format!("MATCH,{GROUP_NAME}"))]),
@@ -290,7 +285,10 @@ mod tests {
             Some("be26b8a6-230a-4d13-b64e-56766d93302a")
         );
         assert_eq!(proxy.get("network").and_then(Value::as_str), Some("ws"));
-        assert_eq!(proxy.get("servername").and_then(Value::as_str), Some("JoGyLS-6551.mamame.store"));
+        assert_eq!(
+            proxy.get("servername").and_then(Value::as_str),
+            Some("JoGyLS-6551.mamame.store")
+        );
         assert_eq!(proxy.get("client-fingerprint").and_then(Value::as_str), Some("firefox"));
 
         // name 应去掉 [vless] 前缀，保留 flags + 节点名
@@ -298,9 +296,15 @@ mod tests {
 
         // ws-opts path / host
         let wsopts = proxy.get("ws-opts").and_then(Value::as_mapping).unwrap();
-        assert_eq!(wsopts.get("path").and_then(Value::as_str), Some("/api/mwjxr0uE8cqJw8Nso6"));
+        assert_eq!(
+            wsopts.get("path").and_then(Value::as_str),
+            Some("/api/mwjxr0uE8cqJw8Nso6")
+        );
         let headers = wsopts.get("headers").and_then(Value::as_mapping).unwrap();
-        assert_eq!(headers.get("Host").and_then(Value::as_str), Some("JoGyLS-6551.mamame.store"));
+        assert_eq!(
+            headers.get("Host").and_then(Value::as_str),
+            Some("JoGyLS-6551.mamame.store")
+        );
 
         // root 含 proxy-groups 和 rules
         assert!(root.get("proxy-groups").and_then(Value::as_sequence).is_some());
@@ -320,6 +324,9 @@ mod tests {
         let encoded = STANDARD.encode(SAMPLE_LINK.as_bytes());
         let yaml = convert_share_link(&encoded).expect("should decode base64 and convert");
         let root: Mapping = serde_yaml_ng::from_str(&yaml).unwrap();
-        assert_eq!(root.get("proxies").and_then(Value::as_sequence).map(|s| s.len()), Some(1));
+        assert_eq!(
+            root.get("proxies").and_then(Value::as_sequence).map(|s| s.len()),
+            Some(1)
+        );
     }
 }

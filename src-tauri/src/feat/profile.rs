@@ -1,9 +1,11 @@
 use crate::{
     cmd,
     config::{Config, PrfItem, PrfOption, profiles::profiles_draft_update_item_safe},
-    core::{CoreManager, handle, tray, validate::ValidationOutcome},
+    core::{CoreManager, handle, validate::ValidationOutcome},
     utils::help::{mask_err, mask_url},
 };
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::tray;
 use anyhow::{Result, bail};
 use clash_verge_logging::{Type, logging, logging_error};
 use smartstring::alias::String;
@@ -26,6 +28,7 @@ pub async fn switch_proxy_node(group_name: &str, proxy_name: &str) {
         Ok(_) => {
             logging!(info, Type::Tray, "切换代理成功: {} -> {}", group_name, proxy_name);
             let _ = handle::Handle::app_handle().emit("verge://refresh-proxy-config", ());
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
             let _ = tray::Tray::global().update_menu().await;
             return;
         }
@@ -48,6 +51,7 @@ pub async fn switch_proxy_node(group_name: &str, proxy_name: &str) {
     {
         Ok(_) => {
             logging!(info, Type::Tray, "代理切换回退成功: {} -> {}", group_name, proxy_name);
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
             let _ = tray::Tray::global().update_menu().await;
         }
         Err(err) => {

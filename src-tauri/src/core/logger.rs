@@ -18,10 +18,11 @@ use log::{Level, LevelFilter, Record};
 use parking_lot::{Mutex, RwLock};
 
 use crate::{
-    core::service,
     singleton,
     utils::dirs::{self, service_log_dir, sidecar_log_dir},
 };
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::service;
 
 pub struct Logger {
     handle: Arc<Mutex<Option<LoggerHandle>>>,
@@ -176,6 +177,7 @@ impl Logger {
         *self.sidecar_file_writer.write() = Some(sidecar_writer);
 
         // update service writer config
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         if service::is_service_ipc_path_exists() && service::is_service_available().await.is_ok() {
             let service_log_dir = dirs::path_to_str(&service_log_dir()?)?.into();
             clash_verge_service_ipc::update_writer(&WriterConfig {

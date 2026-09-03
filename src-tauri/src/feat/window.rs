@@ -1,5 +1,7 @@
 use crate::config::Config;
-use crate::core::{CoreManager, handle, sysopt};
+use crate::core::{CoreManager, handle};
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::sysopt;
 use crate::module::lightweight;
 use crate::utils;
 use crate::utils::window_manager::WindowManager;
@@ -42,6 +44,7 @@ pub async fn clean_async() -> bool {
     logging!(info, Type::System, "开始执行异步清理操作...");
 
     // 重置系统代理
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     let proxy_task = tokio::task::spawn(async {
         let sys_proxy_enabled = Config::verge().await.data_arc().enable_system_proxy.unwrap_or(false);
         if !sys_proxy_enabled {
@@ -141,9 +144,15 @@ pub async fn clean_async() -> bool {
     });
 
     // 并行执行清理任务
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     let (proxy_result, core_result, dns_result) = tokio::join!(proxy_task, core_task, dns_task);
+    #[cfg(any(target_os = "android", target_os = "ios"))]
+    let (core_result, dns_result) = tokio::join!(core_task, dns_task);
 
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     let proxy_success = proxy_result.unwrap_or_default();
+    #[cfg(any(target_os = "android", target_os = "ios"))]
+    let proxy_success = true;
     let core_success = core_result.unwrap_or_default();
     let dns_success = dns_result.unwrap_or_default();
 

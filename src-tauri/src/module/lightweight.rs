@@ -1,8 +1,10 @@
 use crate::{
     config::Config,
-    core::{timer::Timer, tray::Tray},
+    core::timer::Timer,
     process::AsyncHandler,
 };
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::tray::Tray;
 
 use clash_verge_logging::{Type, logging};
 
@@ -72,6 +74,7 @@ pub fn is_in_lightweight_mode() -> bool {
     get_state() == LightweightState::In
 }
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 async fn refresh_lightweight_tray_state() {
     if let Err(err) = Tray::global().update_menu().await {
         logging!(warn, Type::Lightweight, "更新托盘轻量模式状态失败: {err}");
@@ -111,12 +114,14 @@ pub fn disable_auto_light_weight_mode() {
 pub async fn entry_lightweight_mode() -> bool {
     if !try_transition(LightweightState::Normal, LightweightState::In) {
         logging!(debug, Type::Lightweight, "无需进入轻量模式，跳过调用");
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         refresh_lightweight_tray_state().await;
         return false;
     }
     record_state_and_log(LightweightState::In);
     WindowManager::destroy_main_window();
     cancel_light_weight_timer();
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     refresh_lightweight_tray_state().await;
     true
 }
@@ -128,6 +133,7 @@ pub async fn exit_lightweight_mode() -> bool {
             Type::Lightweight,
             "轻量模式不在退出条件（可能已退出或正在退出），跳过调用"
         );
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         refresh_lightweight_tray_state().await;
         return false;
     }
@@ -144,6 +150,7 @@ pub async fn exit_lightweight_mode() -> bool {
     }
     cancel_light_weight_timer();
     record_state_and_log(LightweightState::Normal);
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     refresh_lightweight_tray_state().await;
     true
 }

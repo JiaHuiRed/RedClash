@@ -1,10 +1,12 @@
 use crate::{
     config::Config,
-    core::{CoreManager, handle, tray},
+    core::{CoreManager, handle},
     feat::clean_async,
     process::AsyncHandler,
     utils,
 };
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::tray;
 use bytes::BytesMut;
 use clash_verge_logging::{Type, logging};
 use once_cell::sync::Lazy;
@@ -99,6 +101,7 @@ pub async fn change_clash_mode(mode: String) {
             let clash_data = clash.data_arc();
             if clash_data.save_config().await.is_ok() {
                 handle::Handle::refresh_clash();
+                #[cfg(not(any(target_os = "android", target_os = "ios")))]
                 tray::Tray::global().update_menu_and_icon().await;
             }
 

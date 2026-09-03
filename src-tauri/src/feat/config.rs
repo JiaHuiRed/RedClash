@@ -1,8 +1,10 @@
 use crate::{
     config::{Config, IVerge},
-    core::{CoreManager, autostart, handle, hotkey, logger::Logger, sysopt, tray},
+    core::{CoreManager, handle, logger::Logger},
     module::{auto_backup::AutoBackupManager, lightweight},
 };
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::{autostart, hotkey, sysopt, tray};
 use anyhow::Result;
 use bitflags::bitflags;
 use clash_verge_draft::SharedDraft;
@@ -20,6 +22,7 @@ pub async fn patch_clash(patch: &Mapping) -> Result<()> {
             CoreManager::global().restart_core().await?;
         } else {
             if patch.get("mode").is_some() {
+                #[cfg(not(any(target_os = "android", target_os = "ios")))]
                 tray::Tray::global().update_menu_and_icon().await;
             }
             Config::runtime().await.edit_draft(|d| d.patch_config(patch));
@@ -215,6 +218,7 @@ async fn process_terminated_flags(update_flags: UpdateFlags, patch: &IVerge) -> 
             .edit_draft(|d| d.enable_global_hotkey = patch.enable_global_hotkey);
         handle::Handle::refresh_verge();
     }
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if update_flags.contains(UpdateFlags::LAUNCH) {
         autostart::update_launch().await?;
     }
@@ -223,18 +227,22 @@ async fn process_terminated_flags(update_flags: UpdateFlags, patch: &IVerge) -> 
     {
         clash_verge_i18n::set_locale(language.as_str());
     }
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if update_flags.contains(UpdateFlags::SYS_PROXY) {
         sysopt::Sysopt::global().update_sysproxy().await?;
         sysopt::Sysopt::global().refresh_guard().await;
     }
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if update_flags.contains(UpdateFlags::HOTKEY)
         && let Some(hotkeys) = &patch.hotkeys
     {
         hotkey::Hotkey::global().update(hotkeys.to_owned()).await?;
     }
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if update_flags.contains(UpdateFlags::SYSTRAY_MENU) {
         tray::Tray::global().update_menu().await?;
     }
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if update_flags.contains(UpdateFlags::SYSTRAY_ICON) {
         tray::Tray::global()
             .update_icon(&Config::verge().await.latest_arc())
@@ -244,9 +252,11 @@ async fn process_terminated_flags(update_flags: UpdateFlags, patch: &IVerge) -> 
             tray::Tray::global().update_speed_task(patch.enable_tray_speed.unwrap_or(false));
         }
     }
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if update_flags.contains(UpdateFlags::SYSTRAY_TOOLTIP) {
         tray::Tray::global().update_tooltip().await?;
     }
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if update_flags.contains(UpdateFlags::SYSTRAY_CLICK_BEHAVIOR) {
         tray::Tray::global().update_click_behavior().await?;
     }

@@ -5,13 +5,14 @@ use crate::{
     core::{
         CoreManager,
         handle::{self, Handle},
-        service, tray,
         validate::CoreConfigValidator,
     },
     enhance,
     process::AsyncHandler,
     utils::{dirs, help},
 };
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::{service, tray};
 use anyhow::{Result, anyhow};
 use backon::{ExponentialBuilder, Retryable as _};
 use clash_verge_draft::Draft;
@@ -69,20 +70,23 @@ impl Config {
         clash_verge_i18n::sync_locale(verge.language.as_deref());
 
         // init Tun mode
-        let handle = Handle::app_handle();
-        let is_admin = is_current_app_handle_admin(handle);
-        let is_service_available = service::is_service_available().await.is_ok();
-        if !is_admin && !is_service_available {
-            let verge = Self::verge().await;
-            verge.edit_draft(|d| {
-                d.enable_tun_mode = Some(false);
-            });
-            verge.apply();
-            let _ = tray::Tray::global().update_menu().await;
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        {
+            let handle = Handle::app_handle();
+            let is_admin = is_current_app_handle_admin(handle);
+            let is_service_available = service::is_service_available().await.is_ok();
+            if !is_admin && !is_service_available {
+                let verge = Self::verge().await;
+                verge.edit_draft(|d| {
+                    d.enable_tun_mode = Some(false);
+                });
+                verge.apply();
+                let _ = tray::Tray::global().update_menu().await;
 
-            // 分离数据获取和异步调用避免Send问题
-            let verge_data = Self::verge().await.latest_arc();
-            logging_error!(Type::Core, verge_data.save_file().await);
+                // 分离数据获取和异步调用避免Send问题
+                let verge_data = Self::verge().await.latest_arc();
+                logging_error!(Type::Core, verge_data.save_file().await);
+            }
         }
 
         let validation_result = Self::generate_and_validate().await?;

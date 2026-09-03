@@ -11,10 +11,12 @@ use crate::{
         },
         profiles_append_item_safe,
     },
-    core::{CoreManager, handle, timer::Timer, tray::Tray, validate::ValidationOutcome},
+    core::{CoreManager, handle, timer::Timer, validate::ValidationOutcome},
     feat,
     utils::{dirs, help},
 };
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::core::tray::Tray;
 use clash_verge_draft::SharedDraft;
 use clash_verge_logging::{Type, logging};
 use scopeguard::defer;
@@ -160,10 +162,12 @@ pub async fn delete_profile(index: String) -> CmdResult {
     // 使用Send-safe helper函数
     let should_update = profiles_delete_item_safe(&index).await.stringify_err()?;
     profiles_save_file_safe().await.stringify_err()?;
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if let Err(e) = Tray::global().update_tooltip().await {
         logging!(warn, Type::Cmd, "Warning: 异步更新托盘提示失败: {e}");
     }
 
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if let Err(e) = Tray::global().update_menu().await {
         logging!(warn, Type::Cmd, "Warning: 异步更新托盘菜单失败: {e}");
     }
@@ -214,10 +218,12 @@ async fn handle_success(current_value: Option<&String>) -> CmdResult<ValidationO
     Config::profiles().await.apply();
     handle::Handle::refresh_clash();
 
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if let Err(e) = Tray::global().update_tooltip().await {
         logging!(warn, Type::Cmd, "Warning: 异步更新托盘提示失败: {e}");
     }
 
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if let Err(e) = Tray::global().update_menu().await {
         logging!(warn, Type::Cmd, "Warning: 异步更新托盘菜单失败: {e}");
     }

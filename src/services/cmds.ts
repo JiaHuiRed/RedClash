@@ -4,6 +4,7 @@ import { getProxies, getProxyProviders } from 'tauri-plugin-mihomo-api'
 
 import { showNotice } from '@/services/notice-service'
 import { debugLog } from '@/utils/debug'
+import getSystem from '@/utils/get-system'
 
 export async function copyClashEnv() {
   return invoke<void>('copy_clash_env')
@@ -322,6 +323,13 @@ export async function getSystemProxy() {
 }
 
 export async function getAutotemProxy() {
+  if (getSystem() === 'android') {
+    return {
+      enable: false,
+      url: '',
+    }
+  }
+
   try {
     debugLog('[API] 开始调用 get_auto_proxy')
     const result = await invoke<{
@@ -595,6 +603,8 @@ export const repairService = async () => {
 
 // 系统服务是否可用
 export const isServiceAvailable = async () => {
+  if (getSystem() === 'android') return false
+
   try {
     return await invoke<boolean>('is_service_available')
   } catch (error) {

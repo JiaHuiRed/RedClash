@@ -1,4 +1,5 @@
 use super::CmdResult;
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 use crate::core::autostart;
 use crate::{cmd::StringifyErr as _, feat, utils::dirs};
 use smartstring::alias::String;
@@ -33,6 +34,7 @@ pub fn open_web_url(url: String) -> CmdResult<()> {
 }
 
 /// 打开/关闭开发者工具
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[tauri::command]
 pub fn open_devtools(app_handle: AppHandle) {
     if let Some(window) = app_handle.get_webview_window("main") {
@@ -71,6 +73,7 @@ pub fn get_app_dir() -> CmdResult<String> {
 }
 
 /// 获取当前自启动状态
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[tauri::command]
 pub fn get_auto_launch_status() -> CmdResult<bool> {
     autostart::get_launch_status().stringify_err()

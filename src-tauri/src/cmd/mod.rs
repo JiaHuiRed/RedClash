@@ -11,11 +11,14 @@ pub mod lightweight;
 pub mod media_unlock_checker;
 pub mod network;
 pub mod profile;
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub mod proxy;
 pub mod runtime;
 pub mod save_profile;
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub mod service;
 pub mod system;
+#[cfg(target_os = "windows")]
 pub mod uwp;
 pub mod validate;
 pub mod verge;
@@ -29,11 +32,14 @@ pub use lightweight::*;
 pub use media_unlock_checker::*;
 pub use network::*;
 pub use profile::*;
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub use proxy::*;
 pub use runtime::*;
 pub use save_profile::*;
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub use service::*;
 pub use system::*;
+#[cfg(target_os = "windows")]
 pub use uwp::*;
 pub use validate::*;
 pub use verge::*;

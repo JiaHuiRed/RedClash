@@ -1,15 +1,18 @@
 use super::CmdResult;
 use crate::cmd::StringifyErr as _;
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 use crate::core::sysopt::Sysopt;
 use clash_verge_logging::{Type, logging};
 use gethostname::gethostname;
 use network_interface::NetworkInterface;
 use serde_yaml_ng::Mapping;
 use std::net::TcpListener;
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 use sysproxy::{Autoproxy, Sysproxy};
 use tauri_plugin_clash_verge_sysinfo;
 
 /// get the system proxy
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[tauri::command]
 pub async fn get_sys_proxy() -> CmdResult<Mapping> {
     logging!(debug, Type::Network, "异步获取系统代理配置");
@@ -40,6 +43,7 @@ pub async fn get_sys_proxy() -> CmdResult<Mapping> {
 }
 
 /// 获取自动代理配置
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 #[tauri::command]
 pub async fn get_auto_proxy() -> CmdResult<Mapping> {
     Sysopt::global().wait_idle().await;

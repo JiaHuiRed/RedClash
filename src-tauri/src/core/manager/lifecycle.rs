@@ -3,6 +3,7 @@ use crate::cmd::StringifyErr as _;
 use crate::config::{Config, IVerge};
 use crate::core::handle::Handle;
 use crate::core::manager::CLASH_LOGGER;
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
 use crate::core::service::{SERVICE_MANAGER, ServiceStatus};
 use anyhow::Result;
 use clash_verge_logging::{Type, logging};
@@ -18,7 +19,8 @@ impl CoreManager {
         }
 
         match *self.get_running_mode() {
-            RunningMode::Service => self.start_core_by_service().await,
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        RunningMode::Service => self.start_core_by_service().await,
             RunningMode::NotRunning | RunningMode::Sidecar => self.start_core_by_sidecar().await,
         }
     }
@@ -30,7 +32,8 @@ impl CoreManager {
         }
 
         match *self.get_running_mode() {
-            RunningMode::Service => self.stop_core_by_service().await,
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        RunningMode::Service => self.stop_core_by_service().await,
             RunningMode::Sidecar => {
                 self.stop_core_by_sidecar();
                 Ok(())
@@ -65,10 +68,13 @@ impl CoreManager {
     async fn prepare_startup(&self) {
         #[cfg(target_os = "windows")]
         self.wait_for_service_if_needed().await;
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         self.set_running_mode(match SERVICE_MANAGER.current().await {
             ServiceStatus::Ready => RunningMode::Service,
             _ => RunningMode::Sidecar,
         });
+        #[cfg(any(target_os = "android", target_os = "ios"))]
+        self.set_running_mode(RunningMode::Sidecar);
     }
 
     fn after_core_process(&self) {

@@ -1,0 +1,31 @@
+{
+  "identifier": "android-capability",
+  "description": "permissions for android (mobile) builds",
+  "platforms": ["android"],
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-theme",
+    "mihomo:default",
+    "http:default",
+    "http:allow-fetch",
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "https://*/*" }, { "url": "http://*/*" }]
+    },
+    "fs:allow-read-file",
+    "fs:allow-exists",
+    "fs:allow-write-file",
+    {
+      "identifier": "fs:scope",
+      "allow": ["$APPDATA/**", "$CACHE/**", "$DATA/**", "$RESOURCE/../**", "**"]
+    },
+    "fs:allow-app-read-recursive",
+    "fs:allow-app-write-recursive",
+    "dialog:default",
+    "notification:default",
+    "shell:default",
+    "shell:allow-open",
+    "process:default"
+  ]
+}

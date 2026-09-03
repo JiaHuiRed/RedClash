@@ -48,7 +48,6 @@ mod app_init {
             .plugin(tauri_plugin_notification::init())
             .plugin(tauri_plugin_clipboard_manager::init())
             .plugin(tauri_plugin_process::init())
-            .plugin(tauri_plugin_global_shortcut::Builder::new().build())
             .plugin(tauri_plugin_fs::init())
             .plugin(tauri_plugin_dialog::init())
             .plugin(tauri_plugin_shell::init())
@@ -76,6 +75,12 @@ mod app_init {
         {
             builder = builder.plugin(tauri_plugin_devtools::init());
         }
+
+        // Global shortcut plugin is desktop-only
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        {
+            builder = builder.plugin(tauri_plugin_global_shortcut::Builder::new().build());
+        }
         builder
     }
 
@@ -100,6 +105,7 @@ mod app_init {
     }
 
     /// Setup autostart plugin
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     pub fn setup_autostart(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         #[cfg(target_os = "macos")]
         let mut auto_start_plugin_builder = tauri_plugin_autostart::Builder::new();
@@ -117,6 +123,7 @@ mod app_init {
     }
 
     /// Setup window state management
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     pub fn setup_window_state(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         logging!(info, Type::Setup, "初始化窗口状态管理...");
         let window_state_plugin = tauri_plugin_window_state::Builder::new()
@@ -127,6 +134,7 @@ mod app_init {
         Ok(())
     }
 
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     pub fn generate_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static {
         tauri::generate_handler![
             tauri_plugin_clash_verge_sysinfo::commands::get_system_info,
@@ -214,8 +222,87 @@ mod app_init {
             cmd::check_media_unlock,
         ]
     }
+
+    #[cfg(any(target_os = "android", target_os = "ios"))]
+    pub fn generate_handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static {
+        tauri::generate_handler![
+            tauri_plugin_clash_verge_sysinfo::commands::get_system_info,
+            tauri_plugin_clash_verge_sysinfo::commands::get_app_uptime,
+            tauri_plugin_clash_verge_sysinfo::commands::app_is_admin,
+            tauri_plugin_clash_verge_sysinfo::commands::export_diagnostic_info,
+            cmd::is_port_in_use,
+            cmd::open_app_dir,
+            cmd::open_logs_dir,
+            cmd::open_web_url,
+            cmd::open_core_dir,
+            cmd::get_portable_flag,
+            cmd::get_network_interfaces,
+            cmd::get_system_hostname,
+            cmd::restart_app,
+            cmd::start_core,
+            cmd::stop_core,
+            cmd::restart_core,
+            cmd::get_running_mode,
+            cmd::entry_lightweight_mode,
+            cmd::exit_lightweight_mode,
+            cmd::get_clash_info,
+            cmd::patch_clash_config,
+            cmd::patch_clash_mode,
+            cmd::change_clash_core,
+            cmd::get_runtime_config,
+            cmd::get_runtime_yaml,
+            cmd::get_runtime_exists,
+            cmd::get_runtime_logs,
+            cmd::get_runtime_proxy_chain_config,
+            cmd::update_proxy_chain_config_in_runtime,
+            cmd::copy_clash_env,
+            cmd::save_dns_config,
+            cmd::apply_dns_config,
+            cmd::check_dns_config_exists,
+            cmd::get_dns_config_content,
+            cmd::validate_dns_config,
+            cmd::get_clash_logs,
+            cmd::get_verge_config,
+            cmd::patch_verge_config,
+            cmd::test_delay,
+            cmd::get_app_dir,
+            cmd::copy_icon_file,
+            cmd::download_icon_cache,
+            cmd::exit_app,
+            cmd::get_network_interfaces_info,
+            cmd::get_profiles,
+            cmd::enhance_profiles,
+            cmd::patch_profiles_config,
+            cmd::view_profile,
+            cmd::patch_profile,
+            cmd::create_profile,
+            cmd::import_profile,
+            cmd::reorder_profile,
+            cmd::update_profile,
+            cmd::delete_profile,
+            cmd::read_profile_file,
+            cmd::save_profile_file,
+            cmd::get_next_update_time,
+            cmd::script_validate_notice,
+            cmd::validate_script_file,
+            cmd::create_local_backup,
+            cmd::list_local_backup,
+            cmd::delete_local_backup,
+            cmd::restore_local_backup,
+            cmd::import_local_backup,
+            cmd::export_local_backup,
+            cmd::create_webdav_backup,
+            cmd::save_webdav_config,
+            cmd::list_webdav_backup,
+            cmd::delete_webdav_backup,
+            cmd::restore_webdav_backup,
+            cmd::get_unlock_items,
+            cmd::check_media_unlock,
+        ]
+    }
 }
 
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     if app_init::init_singleton_check().is_err() {
         return;
@@ -238,12 +325,14 @@ pub fn run() {
             resolve::init_work_dir_and_logger()?;
 
             logging!(info, Type::Setup, "开始应用初始化...");
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
             if let Err(e) = app_init::setup_autostart(app) {
                 logging!(error, Type::Setup, "Failed to setup autostart: {}", e);
             }
 
             app_init::setup_deep_links(app);
 
+            #[cfg(not(any(target_os = "android", target_os = "ios")))]
             if let Err(e) = app_init::setup_window_state(app) {
                 logging!(error, Type::Setup, "Failed to setup window state: {}", e);
             }
@@ -263,9 +352,11 @@ pub fn run() {
         use crate::utils::window_manager::WindowManager;
         use crate::{
             config::Config,
-            core::{self, handle, hotkey},
+            core::{self, handle},
             process::AsyncHandler,
         };
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        use crate::core::hotkey;
         use clash_verge_logging::{Type, logging};
         use tauri::AppHandle;
         #[cfg(target_os = "macos")]
@@ -329,6 +420,7 @@ pub fn run() {
                             .register_system_hotkey(SystemHotkey::CmdW)
                             .await;
                     }
+                    #[cfg(not(any(target_os = "android", target_os = "ios")))]
                     if !is_enable_global_hotkey {
                         let _ = hotkey::Hotkey::global().init(false).await;
                     }
@@ -342,6 +434,7 @@ pub fn run() {
                     let _ = hotkey::Hotkey::global().unregister_system_hotkey(SystemHotkey::CmdW);
                 }
 
+                #[cfg(not(any(target_os = "android", target_os = "ios")))]
                 if !is_enable_global_hotkey {
                     let _ = hotkey::Hotkey::global().reset();
                 }

@@ -45,7 +45,10 @@ pub async fn build_new_window() -> Result<WebviewWindow, String> {
     let prefers_dark_background = match resolved_theme {
         Some(Theme::Dark) => true,
         Some(Theme::Light) => false,
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         _ => !matches!(detect_system_theme().ok(), Some(SystemTheme::Light)),
+        #[cfg(any(target_os = "android", target_os = "ios"))]
+        _ => false,
     };
 
     let background_color = if prefers_dark_background {
@@ -62,9 +65,7 @@ pub async fn build_new_window() -> Result<WebviewWindow, String> {
         tauri::WebviewUrl::App(start_page.into()),
     )
     .title("RedClash")
-    .center()
-    .decorations(DEFAULT_DECORATIONS)
-    .fullscreen(false)
+
     .inner_size(DEFAULT_WIDTH, DEFAULT_HEIGHT)
     .min_inner_size(MINIMAL_WIDTH, MINIMAL_HEIGHT)
     .visible(false) // 等待主题色准备好后再展示，避免启动色差
@@ -78,6 +79,13 @@ pub async fn build_new_window() -> Result<WebviewWindow, String> {
         logging_error!(Type::Window, window.show());
         logging_error!(Type::Window, window.set_focus());
     });
+
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    {
+        builder = builder.decorations(DEFAULT_DECORATIONS);
+        builder = builder.fullscreen(false);
+        builder = builder.center();
+    }
 
     if let Some(theme) = resolved_theme {
         builder = builder.theme(Some(theme));

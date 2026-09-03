@@ -2,6 +2,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import debounce from '@/utils/debounce'
+import getSystem from '@/utils/get-system'
 
 import { WindowContext } from './window-context'
 
@@ -78,7 +79,11 @@ export const WindowProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [])
 
   useEffect(() => {
-    currentWindow.setMinimizable?.(true)
+    if (getSystem() === 'android') return
+
+    void currentWindow.setMinimizable?.(true).catch((err) => {
+      console.warn('[WindowProvider] 设置最小化失败:', err)
+    })
   }, [currentWindow])
 
   const contextValue = useMemo(
