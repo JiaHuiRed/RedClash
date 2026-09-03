@@ -18,7 +18,7 @@
     "shortDescription": "RedClash"
   },
   "build": {
-    "beforeBuildCommand": "pnpm run web:build",
+    "beforeBuildCommand": "node scripts/prepare-android-core.mjs && pnpm run web:build",
     "frontendDist": "../dist",
     "beforeDevCommand": "pnpm run web:dev",
     "devUrl": "http://localhost:3000/",
@@ -47,7 +47,7 @@
       }
     ],
     "security": {
-      "capabilities": ["desktop-capability", "migrated"],
+      "capabilities": ["desktop-capability", "android-capability", "migrated"],
       "assetProtocol": {
         "enable": true,
         "scope": {

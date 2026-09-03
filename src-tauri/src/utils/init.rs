@@ -16,6 +16,8 @@ use clash_verge_logging::Type;
 #[cfg(target_os = "windows")]
 use std::path::Path;
 use std::{path::PathBuf, str::FromStr as _};
+#[cfg(target_os = "android")]
+use tauri_plugin_fs::FsExt as _;
 use tauri_plugin_shell::ShellExt as _;
 use tokio::fs;
 use tokio::fs::DirEntry;
@@ -317,6 +319,27 @@ pub async fn init_config() -> Result<()> {
 /// after tauri setup
 pub async fn init_resources() -> Result<()> {
     let app_dir = dirs::app_home_dir()?;
+
+    #[cfg(target_os = "android")]
+    {
+        if !app_dir.exists() {
+            fs::create_dir_all(&app_dir).await?;
+        }
+
+        for file in ["Country.mmdb", "geoip.dat", "geosite.dat"] {
+            let dest_path = app_dir.join(file);
+            if dest_path.exists() {
+                continue;
+            }
+
+            let content = read_android_resource(file)?;
+            fs::write(&dest_path, content).await?;
+            logging!(debug, Type::Setup, "Android resource copied '{}'", file);
+        }
+
+        return Ok(());
+    }
+
     let res_dir = dirs::app_resources_dir()?;
 
     if !app_dir.exists() {
@@ -356,6 +379,46 @@ pub async fn init_resources() -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(target_os = "android")]
+fn read_android_resource(file: &str) -> Result<Vec<u8>> {
+    let resource_path = dirs::app_resources_dir()?.join(file);
+    handle::Handle::app_handle()
+        .fs()
+        .read(resource_path)
+        .map_err(|err| anyhow::anyhow!("failed to read Android resource '{}': {}", file, err))
+}
+
+#[cfg(target_os = "android")]
+pub fn prepare_android_core(core_name: &str) -> Result<PathBuf> {
+    if core_name != "verge-mihomo" {
+        return Err(anyhow::anyhow!(
+            "Android core '{}' is not bundled; only 'verge-mihomo' is supported",
+            core_name
+        ));
+    }
+
+    let process_maps = std::fs::read_to_string("/proc/self/maps")?;
+    let apk_path = process_maps
+        .lines()
+        .filter_map(|line| line.split_ascii_whitespace().last())
+        .find(|path| path.ends_with("/base.apk"))
+        .ok_or_else(|| anyhow::anyhow!("failed to resolve Android APK path"))?;
+    let core_path = PathBuf::from(apk_path)
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("failed to resolve Android app directory"))?
+        .join("lib")
+        .join("arm64")
+        .join("libverge_mihomo.so");
+    if !core_path.is_file() {
+        return Err(anyhow::anyhow!(
+            "Android core is missing from the native library directory: {}",
+            core_path.display()
+        ));
+    }
+
+    Ok(core_path)
 }
 
 /// initialize url scheme
@@ -402,6 +465,10 @@ pub fn init_scheme() -> Result<()> {
     Ok(())
 }
 #[cfg(target_os = "macos")]
+pub const fn init_scheme() -> Result<()> {
+    Ok(())
+}
+#[cfg(any(target_os = "android", target_os = "ios"))]
 pub const fn init_scheme() -> Result<()> {
     Ok(())
 }

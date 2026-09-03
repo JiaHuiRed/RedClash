@@ -340,11 +340,14 @@ impl CoreConfigValidator {
         logging!(info, Type::Validate, "验证目录: {}", app_dir_str);
 
         // 使用子进程运行clash验证配置
-        let command =
-            app_handle
-                .shell()
-                .sidecar(clash_core.as_str())?
-                .args(["-t", "-d", app_dir_str, "-f", config_path]);
+        #[cfg(target_os = "android")]
+        let command = {
+            let core_path = crate::utils::init::prepare_android_core(&clash_core)?;
+            app_handle.shell().command(core_path)
+        };
+        #[cfg(not(target_os = "android"))]
+        let command = app_handle.shell().sidecar(clash_core.as_str())?;
+        let command = command.args(["-t", "-d", app_dir_str, "-f", config_path]);
         let output = command.output().await?;
 
         let status = &output.status;

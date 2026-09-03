@@ -3,7 +3,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use clash_verge_logging::{Type, logging};
 use once_cell::sync::OnceCell;
-#[cfg(unix)]
+#[cfg(all(unix, not(target_os = "android")))]
 use std::iter;
 use std::{fs, path::PathBuf};
 use tauri::Manager as _;
@@ -166,6 +166,7 @@ pub fn service_log_dir() -> Result<PathBuf> {
 
 pub fn clash_latest_log() -> Result<PathBuf> {
     match *CoreManager::global().get_running_mode() {
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
         RunningMode::Service => Ok(service_log_dir()?.join("service_latest.log")),
         RunningMode::Sidecar | RunningMode::NotRunning => Ok(sidecar_log_dir()?.join("sidecar_latest.log")),
     }
@@ -201,7 +202,7 @@ pub fn get_encryption_key() -> Result<Vec<u8>> {
     }
 }
 
-#[cfg(unix)]
+#[cfg(all(unix, not(target_os = "android")))]
 pub fn ensure_mihomo_safe_dir() -> Option<PathBuf> {
     iter::once("/tmp")
         .map(PathBuf::from)
@@ -219,7 +220,18 @@ pub fn ensure_mihomo_safe_dir() -> Option<PathBuf> {
         })
 }
 
-#[cfg(unix)]
+#[cfg(target_os = "android")]
+pub fn ipc_path() -> Result<PathBuf> {
+    // Plugins are registered before the Tauri AppHandle exists. `/data/data`
+    // aliases the active user's sandbox, so this is valid during both phases.
+    let package_id = APP_ID.replace('-', "_");
+    Ok(PathBuf::from("/data/data")
+        .join(package_id)
+        .join(APP_ID)
+        .join("verge-mihomo.sock"))
+}
+
+#[cfg(all(unix, not(target_os = "android")))]
 pub fn ipc_path() -> Result<PathBuf> {
     ensure_mihomo_safe_dir()
         .map(|base_dir| base_dir.join("verge").join("verge-mihomo.sock"))
