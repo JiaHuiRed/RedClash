@@ -289,10 +289,7 @@ fn set_tun_file_descriptor(config: &mut Mapping, tun_fd: i32) -> Result<()> {
     let Some(Value::Mapping(tun)) = config.get_mut(&tun_key) else {
         return Err(anyhow!("tun configuration is not a mapping"));
     };
-    tun.insert(
-        Value::from("file-descriptor"),
-        Value::Number((tun_fd as i64).into()),
-    );
+    tun.insert(Value::from("file-descriptor"), Value::Number((tun_fd as i64).into()));
     Ok(())
 }
 
@@ -411,9 +408,6 @@ mod tests {
         set_tun_file_descriptor(&mut config, 42).expect("tun mapping should be writable");
 
         let tun = config.get("tun").and_then(Value::as_mapping).expect("tun mapping");
-        assert_eq!(
-            tun.get("file-descriptor").and_then(Value::as_i64),
-            Some(42)
-        );
+        assert_eq!(tun.get("file-descriptor").and_then(Value::as_i64), Some(42));
     }
 }

@@ -13,8 +13,8 @@
 //! 所以这里自己导出一个 JNI 入口，由 `MihomoPlugin.load()` 在插件装载时调用。
 
 use clash_verge_logging::{Type, logging};
-use jni::{EnvUnowned, Outcome};
 use jni::objects::{JClass, JObject};
+use jni::{EnvUnowned, Outcome};
 
 /// 用 App Context 初始化平台证书校验器。
 ///
@@ -33,11 +33,7 @@ pub extern "system" fn Java_app_tauri_mihomo_MihomoPlugin_nativeInitVerifier<'ca
         .into_outcome()
     {
         Outcome::Ok(()) => {}
-        Outcome::Err(error) => logging!(
-            error,
-            Type::Setup,
-            "初始化 Android 平台证书校验器失败: {error}"
-        ),
+        Outcome::Err(error) => logging!(error, Type::Setup, "初始化 Android 平台证书校验器失败: {error}"),
         Outcome::Panic(_) => logging!(
             error,
             Type::Setup,

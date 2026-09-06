@@ -9,10 +9,10 @@ mod commands;
 mod error;
 mod ipc;
 mod mihomo;
-pub mod models;
-mod utils;
 #[cfg(target_os = "android")]
 mod mobile;
+pub mod models;
+mod utils;
 
 pub use error::{Error, Result};
 #[cfg(target_os = "android")]
