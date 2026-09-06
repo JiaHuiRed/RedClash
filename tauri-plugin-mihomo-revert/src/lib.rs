@@ -11,8 +11,12 @@ mod ipc;
 mod mihomo;
 pub mod models;
 mod utils;
+#[cfg(target_os = "android")]
+mod mobile;
 
 pub use error::{Error, Result};
+#[cfg(target_os = "android")]
+pub use mobile::AndroidVpn;
 
 pub(crate) use crate::ipc::IpcPoolConfig;
 pub use crate::ipc::{IpcConnectionPool, IpcPoolConfigBuilder, RejectPolicy};
@@ -145,7 +149,7 @@ impl Builder {
                 commands::clear_all_ws_connections,
                 // commands::ws_send,
             ])
-            .setup(move |app, _api| {
+            .setup(move |app, api| {
                 // 初始化连接池
                 IpcConnectionPool::init(pool_config).map_err(|e| {
                     tauri::Error::PluginInitialization(
@@ -162,6 +166,12 @@ impl Builder {
                     socket_path,
                     connection_manager: Default::default(),
                 }));
+
+                #[cfg(target_os = "android")]
+                {
+                    let android_vpn = mobile::init(app, api)?;
+                    app.manage(android_vpn);
+                }
 
                 Ok(())
             })

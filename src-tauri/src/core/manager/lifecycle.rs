@@ -9,6 +9,8 @@ use anyhow::Result;
 use clash_verge_logging::{Type, logging};
 use scopeguard::defer;
 use smartstring::alias::String;
+#[cfg(target_os = "android")]
+use tauri::Manager as _;
 use tauri_plugin_clash_verge_sysinfo;
 
 impl CoreManager {
@@ -18,11 +20,18 @@ impl CoreManager {
             self.after_core_process();
         }
 
-        match *self.get_running_mode() {
+        let result = match *self.get_running_mode() {
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             RunningMode::Service => self.start_core_by_service().await,
             RunningMode::NotRunning | RunningMode::Sidecar => self.start_core_by_sidecar().await,
+        };
+
+        #[cfg(target_os = "android")]
+        if result.is_err() {
+            stop_android_vpn();
         }
+
+        result
     }
 
     pub async fn stop_core(&self) -> Result<()> {
@@ -31,7 +40,7 @@ impl CoreManager {
             self.after_core_process();
         }
 
-        match *self.get_running_mode() {
+        let result = match *self.get_running_mode() {
             #[cfg(not(any(target_os = "android", target_os = "ios")))]
             RunningMode::Service => self.stop_core_by_service().await,
             RunningMode::Sidecar => {
@@ -39,7 +48,12 @@ impl CoreManager {
                 Ok(())
             }
             RunningMode::NotRunning => Ok(()),
-        }
+        };
+
+        #[cfg(target_os = "android")]
+        stop_android_vpn();
+
+        result
     }
 
     pub async fn restart_core(&self) -> Result<()> {
@@ -120,5 +134,14 @@ impl CoreManager {
         })
         .retry(backoff)
         .await;
+    }
+}
+
+#[cfg(target_os = "android")]
+fn stop_android_vpn() {
+    let app_handle = Handle::app_handle();
+    let vpn = app_handle.state::<tauri_plugin_mihomo::AndroidVpn<tauri::Wry>>();
+    if let Err(error) = vpn.stop_vpn() {
+        logging!(warn, Type::Core, "Failed to stop Android VPN: {}", error);
     }
 }

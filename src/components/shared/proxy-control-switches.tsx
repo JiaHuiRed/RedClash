@@ -20,6 +20,7 @@ import { useSystemProxyState } from '@/hooks/use-system-proxy-state'
 import { useSystemState } from '@/hooks/use-system-state'
 import { useVerge } from '@/hooks/use-verge'
 import { showNotice } from '@/services/notice-service'
+import getSystem from '@/utils/get-system'
 
 interface ProxySwitchProps {
   label?: string
@@ -137,6 +138,7 @@ const ProxyControlSwitches = ({
     useSystemProxyState()
   const { isServiceOk, isTunModeAvailable, mutateSystemState } =
     useSystemState()
+  const isAndroid = getSystem() === 'android'
 
   const sysproxyRef = useRef<DialogRef>(null)
   const tunRef = useRef<DialogRef>(null)
@@ -209,7 +211,7 @@ const ProxyControlSwitches = ({
           highlight={enable_tun_mode || false}
           extraIcons={
             <>
-              {!isTunModeAvailable && (
+              {!isTunModeAvailable && !isAndroid && (
                 <>
                   <TooltipIcon
                     title={t(
@@ -229,7 +231,7 @@ const ProxyControlSwitches = ({
                   />
                 </>
               )}
-              {isServiceOk && (
+              {isServiceOk && !isAndroid && (
                 <TooltipIcon
                   title={t(
                     'settings.sections.proxyControl.actions.uninstallService',

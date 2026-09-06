@@ -1,6 +1,8 @@
 #![allow(non_snake_case)]
 #![recursion_limit = "512"]
 
+#[cfg(target_os = "android")]
+mod android;
 mod cmd;
 pub mod config;
 mod constants;

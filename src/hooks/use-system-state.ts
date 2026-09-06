@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { getRunningMode, isAdmin, isServiceAvailable } from '@/services/cmds'
 import { showNotice } from '@/services/notice-service'
+import getSystem from '@/utils/get-system'
 
 import { useVerge } from './use-verge'
 
@@ -54,7 +55,9 @@ export function useSystemState() {
 
   const isSidecarMode = systemState.runningMode === 'Sidecar'
   const isServiceMode = systemState.runningMode === 'Service'
-  const isTunModeAvailable = systemState.isAdminMode || systemState.isServiceOk
+  const isAndroid = getSystem() === 'android'
+  const isTunModeAvailable =
+    isAndroid || systemState.isAdminMode || systemState.isServiceOk
 
   const enable_tun_mode = verge?.enable_tun_mode
   const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)

@@ -140,6 +140,10 @@ fn determine_update_flags(patch: &IVerge) -> UpdateFlags {
         restart_core_needed |= tproxy_enabled.is_some() || tproxy_port.is_some();
         restart_core_needed |= tun_mode == Some(true);
     }
+    #[cfg(target_os = "android")]
+    {
+        restart_core_needed |= tun_mode.is_some();
+    }
 
     let mut update_flags = UpdateFlags::empty();
     if restart_core_needed {

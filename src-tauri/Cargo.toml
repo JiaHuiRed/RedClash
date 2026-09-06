@@ -121,6 +121,12 @@ windows = { version = "0.62.2", features = ["Win32_Globalization"] }
 tauri-plugin-autostart = "2.5.1"
 tauri-plugin-global-shortcut = "2.3.2"
 
+# `reqwest` 用 rustls-platform-verifier 校验证书，在 Android 上必须先用 App Context
+# 通过 JNI 初始化，否则首个 HTTPS 请求就会 panic。见 src/android.rs
+[target.'cfg(target_os = "android")'.dependencies]
+jni = "0.22"
+rustls-platform-verifier = "0.7"
+
 [dev-dependencies]
 criterion = { workspace = true }
 

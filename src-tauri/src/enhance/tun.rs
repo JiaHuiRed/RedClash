@@ -78,6 +78,12 @@ pub fn use_tun(mut config: Mapping, enable: bool) -> Mapping {
 
     // 更新TUN配置
     revise!(tun_val, "enable", enable);
+    #[cfg(target_os = "android")]
+    if enable {
+        // Android's VpnService owns routes; mihomo's netlink monitor is blocked.
+        revise!(tun_val, "auto-route", false);
+        revise!(tun_val, "auto-detect-interface", false);
+    }
     revise!(config, "tun", tun_val);
 
     config

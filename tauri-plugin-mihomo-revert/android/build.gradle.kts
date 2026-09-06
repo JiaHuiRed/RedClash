@@ -38,6 +38,10 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.0")
     implementation("com.google.android.material:material:1.7.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.3")
+    // Rust 侧的 HTTPS（订阅下载等）经 rustls-platform-verifier 走 Android 信任库，
+    // 需要这个官方 AAR 提供 org.rustls.platformverifier.CertificateVerifier。
+    // 该组件没有发布到 Maven，取自 crates.io 的 rustls-platform-verifier-android 0.1.1。
+    implementation(files("libs/rustls-platform-verifier-0.1.1.aar"))
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

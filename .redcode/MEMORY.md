@@ -2,14 +2,17 @@
 
 > 目标：代理客户端，核心价值是**连接速度**（测速准确性、选节点效率、UI 响应）。
 
-## 当前进度（260828）
+## 当前进度（260906）
 
-- **v0.1.1 已 push**（origin/master = 8dc18cfa）：feat vless 直链订阅转换（b15b22b3）+ fix pnpm-lock 补 tauri cli 平台二进制（7856d30b）+ release 升版（8dc18cfa）。一元/星辰订阅节点显示问题全解决——主解药是 UA 修复（v0.1.0，用户公司在远端做），星辰 62 节点已实测全显示
-- **警惕（260828）**：`.redcode/MEMORY.md` 曾被未知进程重置为 4 行空模板（git commit hooks 或引擎播种嫌疑，未定案），本次已手工恢复；若再见此现象需排查 `.husky` hook 与引擎播种逻辑
+- **Android 全链路已真机打通**：订阅导入（Rust HTTPS）→ 72 节点进内核 → TUN 接管（tun0）→ 其他 App 流量走代理节点（`www.google.com -> [Hy2]Taiwan9` 实测）。详见「Android 全链路验证（260906）」
+- **v0.1.1 已 push**（origin/master = 8dc18cfa）；此后 260830-260906 的 Android 移植改动**全在未提交工作树**（10 modified + 6 untracked），commit 前先跑三件套回归（已全绿 260906：typecheck / cargo test / android cargo check）
 - **待办（按序）**：
-  - ③ DelaySnapshot 渲染缓存（节点多时 UI 不抖）——上游参考 upstream-delay.ts 150-171 行快照 + 211-222 行 addGroupListener 多监听（配套）
-  - ④ 插件升级 0.5.5：需先验证上游"节点全空"已修（本地 revert 是 0.1.5，当初因该 bug 本地化）
-  - ⑤ 500ms 最小加载动画是感知速度权衡（两边一致，可讨论缩短）
+  - Android 端 UI 适配：去掉桌面装饰件（顶部红黄绿三灯在触屏无用）、布局按平板触屏走——用户 260906 提出，界面不能照抄桌面
+  - Android 工作树收尾提交 + 询问 push
+  - 桌面内核升级：`verge-mihomo-x86_64-pc-windows-msvc.exe` 是 2026/5/31 旧包，删 sidecar 或 prebuild `--force` 可刷到 v1.19.30
+  - ③ DelaySnapshot 渲染缓存（上游参考 upstream-delay.ts 150-171 快照 + 211-222 多监听）
+  - ④ 插件升级 0.5.5：需先验证上游"节点全空"已修
+  - ⑤ 500ms 最小加载动画是感知速度权衡（可讨论缩短）
 
 ## 与上游关系（重要）
 
@@ -60,13 +63,36 @@
   7. **tauri-plugin-mihomo-revert 无 Android Gradle 工程** → `:tauri-plugin-mihomo` NoCompatibleVariantsFailure（第 10 轮真因）。已补齐 android/ 下 5 文件：settings.gradle（include :tauri-android→./.tauri/tauri-api）+ build.gradle.kts（copy clipboard 模板，namespace=app.tauri.mihomo，compileSdk 36/minSdk 24）+ AndroidManifest.xml + proguard-rules.pro + src/main/java/MihomoPlugin.kt（`class MihomoPlugin(activity: Activity): Plugin(activity)` 空 load——mihomo 逻辑全在 Rust 侧）
   8. 模板参考：registry 里 tauri-plugin-clipboard-manager-2.3.2/android/（build.gradle.kts 45 行标准结构）
 - **APK 构建已成功（260902）**：先因缺 `mobile_entry_point` 失败，补 `#[cfg_attr(mobile, tauri::mobile_entry_point)]` 后通过；全架构构建又因缺 armv7 sidecar 失败，改用 `--target aarch64` 后成功。产物 `src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk`，包名 `io.github.QiuYeDeng.red_clash`，versionCode 1001/versionName 0.1.1/minSdk 24，约 129MB。
-- APK 内容核验只有 `lib/arm64-v8a/libapp_lib.so` 和常规资源，未包含 mihomo ELF；当前是可安装 UI 外壳，stage 2 仍需显式嵌入 Android ELF 并由 Rust `std::process::Command` 拉起。
 - **真机首测（260902）**：平板 `TB335FC` 已通过 adb 在线；首个 debug APK 安装、启动成功且进程存活，但 logcat 报 `window.set_theme`、`event.listen`、`mihomo.get_proxies` not allowed。根因是 `tauri.conf.json` 的 capability 列表漏挂 `android-capability`；同时 Android capability 补 `core:window:allow-set-theme`
 - **Android 重编（260902）**：旧临时构建脚本把 `CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER` 指向裸 `clang.exe`，重新触发 Rust 链接时会被 lld 拒绝 Android 参数；改为 NDK 的 `aarch64-linux-android24-clang.cmd` 目标包装器后已实测 `BUILD SUCCESSFUL`，APK 已更新
 - **Android WebView 平台判断（260902）**：Vite 构建时 `OS_PLATFORM` 继承 Windows 构建机的 `win32`，必须先检查 Android UA，再检查桌面平台；否则移动端会误执行 `set_minimizable`、`get_auto_proxy`、`is_service_available`
 - **Android 核心 stage 2（260902）**：普通 asset 可成功打入 APK 并经 `app.fs().read(asset://...)` 抽到 app home，但 Android 16 拒绝从 app data 执行 ELF（mode 0700 仍 `Permission denied`）；改为构建钩子将 ARM64 ELF 注入 jniLibs 为 `libverge_mihomo.so`、`extractNativeLibs=true`，Rust 从提取后的 native library path 启动。已真机验证配置校验通过、核心进程存活、Unix REST socket 创建、前端无连接错误。
 - **Android IPC 初始化（260902）**：Tauri plugin 注册发生在 `AppHandle` 初始化前；此阶段不能经 `app_home_dir()` 计算 socket。Android IPC 改用 `/data/data/<package>/<APP_ID>/verge-mihomo.sock`，与运行期 sandbox 同路径；`/tmp` 属 shell 用户，mihomo 无权创建 `/tmp/verge`。
-- **后续待做**：stage 2 = Rust 侧 std::process::Command 拉起 mihomo ELF（sidecar 在 Android 走不通，issue #9774）；stage 3 = Kotlin VpnService + TUN（最大新代码块）
+- **Android stage 3（260903，未提交）**：已在工作树接入 Tauri Android plugin 注册、`VpnService` 授权/foreground service/PFD、清除 `FD_CLOEXEC`，并在生成 Run/Check YAML 时将真实 fd 写入 `tun.file-descriptor`；Android TUN 配置变更走 core restart，前端不再按桌面 service/admin 禁用开关。
+## Android TUN 真机攻坚（260904）
+
+- **真机验证进度（260904，260906 收官）**：APK 安装启动、`MihomoVpnService` 起前台服务、`tun0` 建立并被系统判定 VALIDATED（`198.18.0.1/30`、DNS 1.1.1.1、默认路由走 tun0）、mihomo 子进程存活且 REST unix socket 正常。当时卡「tun0 rx bytes 恒 0」，真因与解法见下两条；最终闭环见「Android 全链路验证（260906）」
+- **真因（不是我们代码的锅）**：mihomo 日志 `Start TUN listening error: build android rules: read packages list: open /data/system/packages.xml: permission denied`。`listener/sing_tun/server.go:371` **无条件**调 `buildAndroidRules` → `newPackageManager()` 读 `/data/system/packages.xml` 建按应用路由表；Android 16 不给第三方应用读该文件，**且没有任何配置项能跳过**
+- **正解=官方 `cmfa` 构建标签（别改源码）**：`listener/sing_tun/server_android.go` 带 `//go:build android && !cmfa`，而 `server_notandroid.go` 带 `//go:build !android || cmfa` 且其 `buildAndroidRules` 是空实现。用 `-tags "with_gvisor cmfa"` 编译后，`/data/system/packages.xml` 字符串从二进制里彻底消失。副作用（已确认无害）：关掉 loopback 探测器（我们内核流量走 app UID 已排除、无环）、path 放开 unsafe path、`process.FindPackageName` 未注册只影响按包名规则
+- **自建内核流程**：`go build -tags "with_gvisor cmfa" -trimpath -ldflags '-X github.com/metacubex/mihomo/constant.Version=v1.19.30-redclash -w -s -buildid='`，`GOOS=android GOARCH=arm64 CGO_ENABLED=0`。产物覆盖 `src-tauri/sidecar/verge-mihomo-aarch64-linux-android`（该文件**不被 git 跟踪**，可放心覆盖；原版已备份到 `.redcode/temp/verge-mihomo-android.upstream.bak`）
+- **Go 工具链**：注册表里挂着 `Go Programming Language amd64 go1.26.4` 但磁盘上已无 go.exe；现装在 `D:\AI\tools\go`（go1.24.5）。模块缓存 `C:\Users\Administrator\go\pkg\mod` 已有 mihomo 全套依赖，重建很快。GitHub 走 `http.proxy=http://127.0.0.1:7897`（webfetch 访问 github/raw 会被 fake-ip 挡掉，只能用 curl/git 带代理）
+- **调试 Android WebView 的技法**：`adb forward tcp:9222 localabstract:webview_devtools_remote_<pid>` → `http://127.0.0.1:9222/json/list` 取 page target → 用 PS7 `System.Net.WebSockets.ClientWebSocket` 发 CDP `Runtime.evaluate`（脚本 `.redcode/temp/cdp-eval.ps1`，`-NoAwait` 可让长命令异步执行不阻塞）。**Tauri v2 invoke 参数必须带参数名**：`invoke('patch_verge_config', { payload: {...} })`，写成 `{ enable_tun_mode: true }` 会报 `missing required key payload`
+- **桌面内核落后**：`verge-mihomo-x86_64-pc-windows-msvc.exe` 是 2026/5/31 的旧包，最新 v1.19.30（8/16）。`scripts/prebuild.mjs:380/477` 是「文件已存在就跳过」，所以从没自动刷新；升级=删 sidecar 或 `--force`
+- **订阅导入 panic（第二个坑）**：Rust 侧 HTTPS 全挂，日志 `Panic occurred at rustls-platform-verifier-0.7.0\src\android.rs:90: Unknown panic payload`。reqwest 默认用 rustls-platform-verifier 校验证书，它在 Android 上要经 JNI 调系统信任库，**必须先用 App Context 调 `init_with_env`**，否则首个 HTTPS 请求就 panic（前端 fetch 走 Chromium 栈所以不受影响，容易误判「网络没问题」）。官方 Kotlin 配套组件**没发 Maven**（rustls/rustls-platform-verifier#115），只能自己接线 → 修法：`src-tauri/src/android.rs` 导出 `Java_app_tauri_mihomo_MihomoPlugin_nativeInitVerifier`，`MihomoPlugin.load()` 里 `nativeInitVerifier(hostActivity)` 调一次。依赖加在 `[target.'cfg(target_os = "android")'.dependencies]`（jni 0.22 + rustls-platform-verifier 0.7），不影响桌面构建
+- **jni 0.22 的坑**：`EnvUnowned::with_env` 返回的不是 Result，是 `EnvOutcome`，要 `.into_outcome()` 再 match `Outcome::{Ok,Err,Panic}`（Outcome 没有 Debug）
+- **读 App 日志**：debug 包可以 `adb shell run-as io.github.QiuYeDeng.red_clash tail -n 30 io.github.QiuYeDeng.red-clash/logs/latest.log`，比走 CDP 读文件快且不会卡住
+- **后台限制**：平板锁屏/灭屏时，`startForegroundService` 与 VPN 授权弹窗都会受限，命令会一直 pending——真机验证前务必确认屏幕亮着且在前台
+
+## Android 全链路验证（260906）
+
+- **已实测闭环**：装 APK → `import_profile` 导入星辰订阅（Rust HTTPS 2.5s，无 panic）→ `patch_profiles_config` 后内核 72 节点/4 组 → `patch_verge_config(enable_tun_mode=true)` 起 tun0 → 平板浏览器（其他 App）访问 `www.google.com` 连接链显示 `[Hy2]Taiwan9 ×2.9`；哥哥本人在平板浏览器上 Google 验证成功。选节点用 `delay_group`（keepFixed 参数必传）+ `select_node_for_group`
+- **导入后必须 patch_profiles_config**：`import_profile` 只存文件+设 current，不跑 enhance；`restart_core` 也不行——`generate_file` 只把 `runtime()` 缓存写盘，缓存是启动时生成的旧数据（proxies 恒空 7 个）。`patch_profiles_config` 走 `update_config_forced` 才重新 enhance + 更新内核
+- **enable_tun_mode 会被重置**：重装/切配置后 verge.yaml 里是 false，TUN 不自动恢复；`patch_verge_config({payload:{enable_tun_mode:true}})` 再开（Android 下触发 RESTART_CORE→generate_file→start_vpn 写 fd）
+- **CDP 里没有全局 invoke**：用 `window.__TAURI_INTERNALS__.invoke(cmd, args)`（invoke 不可枚举，Object.keys 看不到，typeof 才探到）；插件命令带命名空间 `plugin:mihomo|get_proxies` 等
+- **App 自身流量不进 TUN**：VPN 建立时 `addDisallowedApplication(packageName)` 排除了自己（防回环），App 内 fetch 走 wlan0 直连——测代理必须用**其他 App** 的流量（adb 拉起浏览器）或看内核日志/连接链
+- **get_connections 只显示活跃连接**：请求完成就消失，验证走代理要轮询连拍或看 get_clash_logs；后台 WebView 被节流时 CDP invoke 会挂起不返回，把 App 拉回前台即恢复
+- **订阅导入 TLS 修法补全（AAR）**：Rust `init_with_env` 接线后仍报 `failed to call native verifier`——缺 Java 侧 `org.rustls.platformverifier.CertificateVerifier`。取 crates.io `rustls-platform-verifier-android` 0.1.1 的预编译 AAR（9.3KB）→ `tauri-plugin-mihomo-revert/android/libs/`，插件 build.gradle.kts 加 `implementation(files("libs/rustls-platform-verifier-0.1.1.aar"))`；javap 验证 `verifyCertificateChain` 签名与 Rust 0.7.0 期望一致（避开 Maven 未发 + 源码 BuildConfig.TEST 依赖两坑）。已真机验证导入成功
+- **红黄绿三灯（用户提出待办）**：macOS 主题装饰件在 Android 无窗口控制功能，纯摆设——移动端 UI 适配时去掉，布局按触屏/窄屏重新裁，不照抄桌面
 
 ## 关键路径
 
