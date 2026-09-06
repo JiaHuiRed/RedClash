@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## v0.1.2 (2026-09-06)
+
+### ✨ 新增
+
+- **Android 平台支持（真机全链路打通）**：联想小新 11 平板（Android 16）原生运行 mihomo 代理。Rust 侧模块级 cfg 适配（tray/autostart/hotkey/service/sysopt 等桌面专属能力）、`tauri-plugin-mihomo-revert` 补齐 Android Gradle 工程；核心 mihomo ELF 经 jniLibs 以 `libverge_mihomo.so` 注入 APK 并从 native library path 启动（Android 16 禁止从 app data 执行 ELF）；REST 通信走 app sandbox 内 Unix socket。
+- **VPN/TUN 全机接管**：新增 `MihomoVpnService`（VpnService 授权、前台服务、PFD、清除 FD_CLOEXEC），TUN 文件描述符经 `tun.file-descriptor` 写入运行时配置传给 mihomo；Android 下 TUN 配置变更走 core restart，前端 TUN 开关不再依赖桌面 service/admin 状态。已在真机实测：订阅导入、72 节点加载、tun0 建立且其他应用流量经代理节点出站。
+
+### 🐞 修复问题
+
+- **Android 订阅导入 panic**：reqwest 默认的 rustls-platform-verifier 在 Android 需先经 JNI `init_with_env` 初始化（新增 `src-tauri/src/android.rs` JNI 导出，插件 `MihomoPlugin.load()` 调用一次），Java 侧校验器类用官方预编译 AAR（`rustls-platform-verifier-android` 0.1.1）补齐；否则首个 Rust 侧 HTTPS 请求即 panic，订阅导入挂起。
+- **内核启动路径**：Android 核心改从 native library 提取路径启动，修复 app data 目录执行权限被拒。
+
+### 🔨 构建 / 依赖
+
+- **Android 构建链**：`scripts/prepare-android-core.mjs` 构建钩子（复制 ARM64 内核到 jniLibs、注入 `extractNativeLibs`）；gen/android repositories 切阿里镜像；Android 证书校验器 AAR 入库。Android 目标内核为自建 mihomo v1.19.30（`cmfa` 标签，绕开 Android 16 禁读 packages.xml 导致 TUN 流量为 0 的问题）。
+- **前端平台判定**：Android UA 检查先于桌面平台，避免移动端误执行 `set_minimizable` 等桌面专属命令；`use-system-state` Android 下 TUN 可用性不再被桌面 admin/service 状态阻断。
+
 ## v0.1.1 (2026-08-28)
 
 ### ⚡ 优化
