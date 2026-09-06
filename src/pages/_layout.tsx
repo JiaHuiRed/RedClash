@@ -187,7 +187,8 @@ const Layout = () => {
 
   const customTitlebar = useMemo(
     () =>
-      decorated !== true ? (
+      // Android 无窗口控制概念，三灯纯装饰；整个标题栏（拖拽区+三灯）直接不渲染
+      decorated !== true && OS !== 'android' ? (
         <div className="the_titlebar">
           <div
             className="the_titlebar-drag-region"

@@ -187,7 +187,8 @@ const ProxyControlSwitches = ({
 
   return (
     <Box sx={{ width: '100%', pr: noRightPadding ? 1 : 2 }}>
-      {isSystemProxyMode && (
+      {/* Android 无系统代理（sysproxy 模块未编译），开关与详情入口整体隐藏 */}
+      {isSystemProxyMode && !isAndroid && (
         <SwitchRow
           label={t('settings.sections.proxyControl.fields.systemProxy')}
           active={systemProxyIndicator}

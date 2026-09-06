@@ -30,6 +30,9 @@ interface Props {
 
 const OS = getSystem()
 
+// Android 无 shell 环境（sysproxy/env 未编译进 Android），env 类型等桌面专属项隐藏
+const isAndroid = OS === 'android'
+
 const languageOptions = supportedLanguages.map((code) => {
   const labels: { [key: string]: string } = {
     en: 'English',
@@ -134,7 +137,7 @@ const SettingVergeBasic = ({ onError }: Props) => {
         </GuardState>
       </SettingItem>
 
-      {OS !== 'linux' && (
+      {OS !== 'linux' && !isAndroid && (
         <SettingItem
           label={t('settings.components.verge.basic.fields.trayClickEvent')}
         >
@@ -168,28 +171,30 @@ const SettingVergeBasic = ({ onError }: Props) => {
         </SettingItem>
       )}
 
-      <SettingItem
-        label={t('settings.components.verge.basic.fields.copyEnvType')}
-        extra={
-          <TooltipIcon icon={ContentCopyRounded} onClick={onCopyClashEnv} />
-        }
-      >
-        <GuardState
-          value={env_type ?? (OS === 'windows' ? 'powershell' : 'bash')}
-          onCatch={onError}
-          onFormat={(e: any) => e.target.value}
-          onChange={(e) => onChangeData({ env_type: e })}
-          onGuard={(e) => patchVerge({ env_type: e })}
+      {!isAndroid && (
+        <SettingItem
+          label={t('settings.components.verge.basic.fields.copyEnvType')}
+          extra={
+            <TooltipIcon icon={ContentCopyRounded} onClick={onCopyClashEnv} />
+          }
         >
-          <Select size="small" sx={{ width: 140, '> div': { py: '7.5px' } }}>
-            <MenuItem value="bash">Bash</MenuItem>
-            <MenuItem value="fish">Fish</MenuItem>
-            <MenuItem value="nushell">Nushell</MenuItem>
-            <MenuItem value="cmd">CMD</MenuItem>
-            <MenuItem value="powershell">PowerShell</MenuItem>
-          </Select>
-        </GuardState>
-      </SettingItem>
+          <GuardState
+            value={env_type ?? (OS === 'windows' ? 'powershell' : 'bash')}
+            onCatch={onError}
+            onFormat={(e: any) => e.target.value}
+            onChange={(e) => onChangeData({ env_type: e })}
+            onGuard={(e) => patchVerge({ env_type: e })}
+          >
+            <Select size="small" sx={{ width: 140, '> div': { py: '7.5px' } }}>
+              <MenuItem value="bash">Bash</MenuItem>
+              <MenuItem value="fish">Fish</MenuItem>
+              <MenuItem value="nushell">Nushell</MenuItem>
+              <MenuItem value="cmd">CMD</MenuItem>
+              <MenuItem value="powershell">PowerShell</MenuItem>
+            </Select>
+          </GuardState>
+        </SettingItem>
+      )}
 
       <SettingItem
         label={t('settings.components.verge.basic.fields.startPage')}
