@@ -19,3 +19,6 @@ CLAUDE.md
 .vfox/
 .claude
 AGENTS.md
+
+# 项目记忆/工作区：本地保留，不入库
+.redcode/
