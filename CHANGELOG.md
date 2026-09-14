@@ -2,6 +2,8 @@
 
 ## v0.1.2 (2026-09-06)
 
+- **Mihomo(Meta) 内核升级至 v1.19.30**
+
 ### ✨ 新增
 
 - **Android 平台支持（真机全链路打通）**：联想小新 11 平板（Android 16）原生运行 mihomo 代理。Rust 侧模块级 cfg 适配（tray/autostart/hotkey/service/sysopt 等桌面专属能力）、`tauri-plugin-mihomo-revert` 补齐 Android Gradle 工程；核心 mihomo ELF 经 jniLibs 以 `libverge_mihomo.so` 注入 APK 并从 native library path 启动（Android 16 禁止从 app data 执行 ELF）；REST 通信走 app sandbox 内 Unix socket。
