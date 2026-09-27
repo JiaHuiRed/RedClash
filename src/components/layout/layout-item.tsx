@@ -13,6 +13,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { useMatch, useNavigate, useResolvedPath } from 'react-router'
 
 import { useVerge } from '@/hooks/use-verge'
+import getSystem from '@/utils/get-system'
 
 interface SortableProps {
   setNodeRef?: (element: HTMLElement | null) => void
@@ -34,12 +35,13 @@ export const LayoutItem = (props: Props) => {
   const { verge } = useVerge()
   const { menu_icon } = verge ?? {}
   const navCollapsed = verge?.collapse_navbar ?? false
+  const compactNav = navCollapsed || getSystem() === 'android'
   const resolved = useResolvedPath(to)
   const match = useMatch({ path: resolved.pathname, end: true })
   const navigate = useNavigate()
 
   const effectiveMenuIcon =
-    navCollapsed && menu_icon === 'disable' ? 'monochrome' : menu_icon
+    compactNav && menu_icon === 'disable' ? 'monochrome' : menu_icon
 
   const { setNodeRef, attributes, listeners, style, isDragging, disabled } =
     sortable ?? {}
@@ -92,8 +94,8 @@ export const LayoutItem = (props: Props) => {
             }
           },
         ]}
-        title={navCollapsed ? children : undefined}
-        aria-label={navCollapsed ? children : undefined}
+        title={compactNav ? children : undefined}
+        aria-label={compactNav ? children : undefined}
         onClick={() => navigate(to)}
       >
         {(effectiveMenuIcon === 'monochrome' || !effectiveMenuIcon) && (

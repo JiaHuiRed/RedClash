@@ -33,6 +33,21 @@ const fn proxy_apply_steps(sys_enabled: bool, auto_enabled: bool) -> [ProxyApply
     }
 }
 
+/// 判断 OS 上当前注册的 PAC 是否为用户外挂的（非 RedClash pac 模式写入的地址）。
+/// 外挂 PAC（如手动注册的按需代理白名单）不应被系统代理开关联动清除。
+fn keep_external_pac(auto: &Autoproxy, current_url: &str) -> bool {
+    let own_via_host = format!("http://127.0.0.1:{}/commands/pac", IVerge::get_singleton_port());
+    !current_url.is_empty() && auto.url.as_str() != current_url && own_via_host.as_str() != current_url
+}
+
+/// 读当前 OS 上注册的 PAC 地址；读不到视为无 PAC（不保留）
+fn current_pac_url() -> Option<std::string::String> {
+    Autoproxy::get_auto_proxy()
+        .ok()
+        .map(|a| a.url)
+        .filter(|u| !u.is_empty())
+}
+
 pub struct Sysopt {
     update_lock: TokioMutex<()>,
     reset_sysproxy: AtomicBool,
@@ -181,9 +196,19 @@ impl Sysopt {
         self.access_guard().write().set_guard_type(guard_type);
 
         let apply_steps = proxy_apply_steps(sys.enable, auto.enable);
+        // 不启用 RedClash 自身 pac 模式时，用户外挂 PAC 跳过清除（总开关关闭/纯系统代理模式都适用）
+        let preserve_external = auto.enable == false && {
+            match current_pac_url() {
+                Some(url) => keep_external_pac(&auto, &url),
+                None => false,
+            }
+        };
 
         tokio::task::spawn_blocking(move || -> Result<()> {
             for step in apply_steps {
+                if preserve_external && step == ProxyApplyStep::Autoproxy {
+                    continue;
+                }
                 match step {
                     ProxyApplyStep::Autoproxy => auto.set_auto_proxy()?,
                     ProxyApplyStep::Sysproxy => sys.set_system_proxy()?,
@@ -212,17 +237,23 @@ impl Sysopt {
         // close proxy guard
         self.access_guard().write().set_guard_type(GuardType::None);
 
-        // 直接关闭所有代理
-        let (sys, auto) = {
+        // 直接关闭所有代理（用户外挂 PAC 保留，仅清 RedClash 自身 PAC）
+        let (sys, auto, preserve_external) = {
             let (sys, auto) = &mut *self.inner_proxy.write();
             sys.enable = false;
             auto.enable = false;
-            (sys.clone(), auto.clone())
+            let external = match current_pac_url() {
+                Some(url) => keep_external_pac(auto, &url),
+                None => false,
+            };
+            (sys.clone(), auto.clone(), external)
         };
 
         tokio::task::spawn_blocking(move || -> Result<()> {
             sys.set_system_proxy()?;
-            auto.set_auto_proxy()?;
+            if !preserve_external {
+                auto.set_auto_proxy()?;
+            }
             Ok(())
         })
         .await??;

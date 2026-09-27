@@ -17,9 +17,7 @@ import {
 import { useLockFn } from 'ahooks'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { closeAllConnections } from 'tauri-plugin-mihomo-api'
 
-import { useVerge } from '@/hooks/use-verge'
 import {
   useAppRefreshers,
   useClashConfigData,
@@ -54,7 +52,6 @@ const MODE_META: Record<
 
 export const ClashModeCard = () => {
   const { t } = useTranslation()
-  const { verge } = useVerge()
   const { clashConfig, isClashConfigFetching } = useClashConfigData()
   const { isCoreDataPending } = useCoreDataStatus()
   const { refreshClashConfig, refreshAll } = useAppRefreshers()
@@ -105,9 +102,6 @@ export const ClashModeCard = () => {
   // 切换模式的处理函数
   const onChangeMode = useLockFn(async (mode: ClashMode) => {
     if (mode === currentModeKey) return
-    if (verge?.auto_close_connection) {
-      closeAllConnections()
-    }
 
     try {
       await patchClashMode(mode)

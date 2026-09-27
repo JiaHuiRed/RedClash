@@ -65,24 +65,18 @@ pub async fn restart_app() {
 fn after_change_clash_mode() {
     AsyncHandler::spawn(move || async {
         let mihomo = handle::Handle::mihomo().await;
-        match mihomo.get_connections().await {
-            Ok(connections) => {
-                if let Some(connections_array) = connections.connections {
-                    for connection in connections_array {
-                        let _ = mihomo.close_connection(&connection.id).await;
-                    }
-                    drop(mihomo);
-                }
-            }
-            Err(err) => {
-                logging!(error, Type::Core, "Failed to get connections: {err}");
-            }
+        if let Err(err) = mihomo.close_all_connections().await {
+            logging!(
+                error,
+                Type::Core,
+                "Failed to close all connections after changing clash mode: {err}"
+            );
         }
     });
 }
 
 /// Change Clash mode (rule/global/direct/script)
-pub async fn change_clash_mode(mode: String) {
+pub async fn change_clash_mode(mode: String) -> Result<(), String> {
     let mut mapping = Mapping::new();
     mapping.insert(Value::from("mode"), Value::from(mode.as_str()));
     // Convert YAML mapping to JSON Value
@@ -90,28 +84,30 @@ pub async fn change_clash_mode(mode: String) {
         "mode": mode
     });
     logging!(debug, Type::Core, "change clash mode to {mode}");
-    match handle::Handle::mihomo().await.patch_base_config(&json_value).await {
-        Ok(_) => {
-            // 更新订阅
-            let clash = Config::clash().await;
-            clash.edit_draft(|d| d.patch_config(&mapping));
-            clash.apply();
-
-            // 分离数据获取和异步调用
-            let clash_data = clash.data_arc();
-            if clash_data.save_config().await.is_ok() {
-                handle::Handle::refresh_clash();
-                #[cfg(not(any(target_os = "android", target_os = "ios")))]
-                tray::Tray::global().update_menu_and_icon().await;
-            }
-
-            let is_auto_close_connection = Config::verge().await.data_arc().auto_close_connection.unwrap_or(false);
-            if is_auto_close_connection {
-                after_change_clash_mode();
-            }
-        }
-        Err(err) => logging!(error, Type::Core, "{err}"),
+    if let Err(err) = handle::Handle::mihomo().await.patch_base_config(&json_value).await {
+        logging!(error, Type::Core, "change clash mode failed: {err}");
+        return Err(err.to_string().into());
     }
+
+    // 更新订阅
+    let clash = Config::clash().await;
+    clash.edit_draft(|d| d.patch_config(&mapping));
+    clash.apply();
+
+    // 分离数据获取和异步调用
+    let clash_data = clash.data_arc();
+    if clash_data.save_config().await.is_ok() {
+        handle::Handle::refresh_clash();
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        tray::Tray::global().update_menu_and_icon().await;
+    }
+
+    let is_auto_close_connection = Config::verge().await.data_arc().auto_close_connection.unwrap_or(false);
+    if is_auto_close_connection {
+        after_change_clash_mode();
+    }
+
+    Ok(())
 }
 
 /// Test delay to a URL through proxy.

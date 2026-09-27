@@ -30,20 +30,37 @@ fn encode_wide<S: AsRef<std::ffi::OsStr>>(string: S) -> Vec<u16> {
 /// unset proxy
 ///
 /// **对于包含中文字符的拨号连接或 VPN 连接，可能无法正确设置其代理，建议使用全英文重命名该连接名称**
+///
+/// `keep_autoconfig`：保留已注册的 PAC（AutoConfigURL）。关闭手动系统代理时不应连带抹掉
+/// 用户自建的 PAC 白名单（260906：此前每次开关系统代理都会把 AutoConfigURL 一并清空）。
 #[inline]
-fn unset_proxy() -> Result<()> {
-    let mut p_opts = Vec::<INTERNET_PER_CONN_OPTIONW>::with_capacity(1);
+fn unset_proxy(keep_autoconfig: bool) -> Result<()> {
+    let autoconfig = if keep_autoconfig { get_autoconfig_url() } else { None };
+    let mut p_opts = Vec::<INTERNET_PER_CONN_OPTIONW>::with_capacity(2);
     p_opts.push(INTERNET_PER_CONN_OPTIONW {
         dwOption: INTERNET_PER_CONN_FLAGS,
         Value: {
             let mut v = INTERNET_PER_CONN_OPTIONW_0::default();
-            v.dwValue = PROXY_TYPE_DIRECT;
+            v.dwValue = if autoconfig.is_some() {
+                PROXY_TYPE_DIRECT | PROXY_TYPE_AUTO_PROXY_URL
+            } else {
+                PROXY_TYPE_DIRECT
+            };
             v
         },
     });
+    let autoconfig_wide = autoconfig.as_ref().map(|url| encode_wide(url));
+    if let Some(s) = &autoconfig_wide {
+        p_opts.push(INTERNET_PER_CONN_OPTIONW {
+            dwOption: INTERNET_PER_CONN_AUTOCONFIG_URL,
+            Value: INTERNET_PER_CONN_OPTIONW_0 {
+                pszValue: PWSTR::from_raw(s.as_ptr() as *mut u16),
+            },
+        });
+    }
     let mut opts = INTERNET_PER_CONN_OPTION_LISTW {
         dwSize: size_of::<INTERNET_PER_CONN_OPTION_LISTW>() as u32,
-        dwOptionCount: 1,
+        dwOptionCount: p_opts.len() as u32,
         dwOptionError: 0,
         pOptions: p_opts.as_mut_ptr(),
         pszConnection: PWSTR::null(),
@@ -103,6 +120,14 @@ fn set_auto_proxy(url: &str) -> Result<()> {
     notify_proxy_change()
 }
 
+/// 读取已注册的 PAC 地址（AutoConfigURL），未注册时返回 None
+#[inline]
+fn get_autoconfig_url() -> Option<String> {
+    let hkcu = RegKey::predef(enums::HKEY_CURRENT_USER);
+    let cur_var = hkcu.open_subkey_with_flags(SUB_KEY, enums::KEY_QUERY_VALUE).ok()?;
+    cur_var.get_value::<String, _>("AutoConfigURL").ok()
+}
+
 /// set global proxy
 ///
 /// **对于包含中文字符的拨号连接或 VPN 连接，可能无法正确设置其代理，建议使用全英文重命名该连接名称**
@@ -111,10 +136,17 @@ fn set_global_proxy(server: &str, bypass: &str) -> Result<()> {
     let s = encode_wide(server);
     let b = encode_wide(bypass);
     let mut p_opts = Vec::<INTERNET_PER_CONN_OPTIONW>::with_capacity(3);
+    // 保留已注册的 PAC：URL 选项必须伴随 AUTO_PROXY_URL flag，
+    // 否则 WinINET 提交整个选项列表时会把 AutoConfigURL 值一并清掉（260906 实测）
+    let autoconfig_wide = get_autoconfig_url().map(|url| encode_wide(url));
     p_opts.push(INTERNET_PER_CONN_OPTIONW {
         dwOption: INTERNET_PER_CONN_FLAGS,
         Value: INTERNET_PER_CONN_OPTIONW_0 {
-            dwValue: PROXY_TYPE_PROXY | PROXY_TYPE_DIRECT,
+            dwValue: if autoconfig_wide.is_some() {
+                PROXY_TYPE_PROXY | PROXY_TYPE_DIRECT | PROXY_TYPE_AUTO_PROXY_URL
+            } else {
+                PROXY_TYPE_PROXY | PROXY_TYPE_DIRECT
+            },
         },
     });
     p_opts.push(INTERNET_PER_CONN_OPTIONW {
@@ -129,10 +161,18 @@ fn set_global_proxy(server: &str, bypass: &str) -> Result<()> {
             pszValue: PWSTR::from_raw(b.as_ptr() as *mut u16),
         },
     });
+    if let Some(s) = &autoconfig_wide {
+        p_opts.push(INTERNET_PER_CONN_OPTIONW {
+            dwOption: INTERNET_PER_CONN_AUTOCONFIG_URL,
+            Value: INTERNET_PER_CONN_OPTIONW_0 {
+                pszValue: PWSTR::from_raw(s.as_ptr() as *mut u16),
+            },
+        });
+    }
 
     let mut opts = INTERNET_PER_CONN_OPTION_LISTW {
         dwSize: size_of::<INTERNET_PER_CONN_OPTION_LISTW>() as u32,
-        dwOptionCount: 3,
+        dwOptionCount: p_opts.len() as u32,
         dwOptionError: 0,
         pOptions: p_opts.as_mut_ptr(),
         pszConnection: PWSTR::null(),
@@ -149,7 +189,6 @@ fn set_global_proxy(server: &str, bypass: &str) -> Result<()> {
     }
     notify_proxy_change()
 }
-
 #[inline]
 fn apply_option(options: &INTERNET_PER_CONN_OPTION_LISTW) -> Result<()> {
     unsafe {
@@ -223,7 +262,8 @@ impl Sysproxy {
     pub fn set_system_proxy(&self) -> Result<()> {
         match self.enable {
             true => set_global_proxy(&format!("{}:{}", self.host, self.port), &self.bypass),
-            false => unset_proxy(),
+            // 关闭手动系统代理时保留 PAC 白名单
+            false => unset_proxy(true),
         }
     }
 }
@@ -244,7 +284,7 @@ impl Autoproxy {
     pub fn set_auto_proxy(&self) -> Result<()> {
         match self.enable {
             true => set_auto_proxy(&self.url),
-            false => unset_proxy(),
+            false => unset_proxy(false),
         }
     }
 }

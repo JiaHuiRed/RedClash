@@ -202,15 +202,19 @@ function sortProxies(
       return [0, delay]
     }
 
-    list.sort((a, b) => {
-      const ad = delayManager.getDelayFix(a, groupName)
-      const bd = delayManager.getDelayFix(b, groupName)
-      const [ar, av] = categorizeDelay(ad)
-      const [br, bv] = categorizeDelay(bd)
-
-      if (ar !== br) return ar - br
-      return av - bv
+    const sorted = list.map((proxy) => {
+      const [rank, value] = categorizeDelay(
+        delayManager.getDelayFix(proxy, groupName),
+      )
+      return { proxy, rank, value }
     })
+
+    sorted.sort((a, b) => {
+      if (a.rank !== b.rank) return a.rank - b.rank
+      return a.value - b.value
+    })
+
+    return sorted.map(({ proxy }) => proxy)
   } else {
     list.sort((a, b) => a.name.localeCompare(b.name))
   }

@@ -58,6 +58,7 @@ const AUTO_CHECK_INITIAL_DELAY_MS = 100
 // 代理节点信息接口
 interface ProxyOption {
   name: string
+  delay?: number
 }
 
 // 排序类型: 默认 | 按延迟 | 按字母
@@ -193,6 +194,11 @@ export const CurrentProxyCard = () => {
     return savedSortType ? (Number(savedSortType) as ProxySortType) : 0
   })
   const [delaySortRefresh, setDelaySortRefresh] = useState(0)
+  const [isProxyMenuOpen, setIsProxyMenuOpen] = useState(false)
+
+  useEffect(() => {
+    if (isDirectMode) setIsProxyMenuOpen(false)
+  }, [isDirectMode])
 
   const normalizePolicyName = useCallback(
     (value?: string | null) => (typeof value === 'string' ? value.trim() : ''),
@@ -758,14 +764,23 @@ export const CurrentProxyCard = () => {
 
   // 计算要显示的代理选项（增加非空校验）
   const proxyOptions = useMemo(() => {
+    const createProxyOption = (name: string): ProxyOption => {
+      const record = state.proxyData.records[name]
+      return {
+        name,
+        delay:
+          record && state.selection.group
+            ? delayManager.getDelayFix(record, state.selection.group)
+            : undefined,
+      }
+    }
+
     const sortWithLatency = (proxiesToSort: ProxyOption[]) => {
       if (!proxiesToSort || sortType === 0) return proxiesToSort
 
       if (!state.proxyData.records || !state.selection.group) {
         return proxiesToSort
       }
-
-      const list = [...proxiesToSort]
 
       if (sortType === 1) {
         const refreshTick = delaySortRefresh
@@ -784,44 +799,38 @@ export const CurrentProxyCard = () => {
           return [0, delay]
         }
 
-        list.sort((a, b) => {
-          const recordA = state.proxyData.records[a.name]
-          const recordB = state.proxyData.records[b.name]
-
-          const [ar, av] = recordA
-            ? categorizeDelay(
-                delayManager.getDelayFix(recordA, state.selection.group),
-              )
-            : [6, Number.MAX_SAFE_INTEGER]
-          const [br, bv] = recordB
-            ? categorizeDelay(
-                delayManager.getDelayFix(recordB, state.selection.group),
-              )
-            : [6, Number.MAX_SAFE_INTEGER]
-
-          if (ar !== br) return ar - br
-          if (av !== bv) return av - bv
-          return refreshTick >= 0 ? a.name.localeCompare(b.name) : 0
+        const sorted = proxiesToSort.map((proxy) => {
+          const [rank, value] =
+            proxy.delay === undefined
+              ? [6, Number.MAX_SAFE_INTEGER]
+              : categorizeDelay(proxy.delay)
+          return { proxy, rank, value }
         })
-      } else {
-        list.sort((a, b) => a.name.localeCompare(b.name))
-      }
 
-      return list
+        sorted.sort((a, b) => {
+          if (a.rank !== b.rank) return a.rank - b.rank
+          if (a.value !== b.value) return a.value - b.value
+          return refreshTick >= 0 ? a.proxy.name.localeCompare(b.proxy.name) : 0
+        })
+
+        return sorted.map(({ proxy }) => proxy)
+      } else {
+        return [...proxiesToSort].sort((a, b) => a.name.localeCompare(b.name))
+      }
     }
 
     if (isDirectMode) {
       return [{ name: 'DIRECT' }]
     }
+    if (!isProxyMenuOpen) return []
+
     if (isGlobalMode && proxies?.global) {
       const options = proxies.global.all
         .filter((p: any) => {
           const name = typeof p === 'string' ? p : p.name
           return name !== 'DIRECT' && name !== 'REJECT'
         })
-        .map((p: any) => ({
-          name: typeof p === 'string' ? p : p.name,
-        }))
+        .map((p: any) => createProxyOption(typeof p === 'string' ? p : p.name))
 
       return sortWithLatency(options)
     }
@@ -832,7 +841,7 @@ export const CurrentProxyCard = () => {
       : null
 
     if (group) {
-      const options = group.all.map((name) => ({ name }))
+      const options = group.all.map(createProxyOption)
       return sortWithLatency(options)
     }
 
@@ -840,6 +849,7 @@ export const CurrentProxyCard = () => {
   }, [
     isDirectMode,
     isGlobalMode,
+    isProxyMenuOpen,
     proxies,
     state.proxyData,
     state.selection.group,
@@ -1038,6 +1048,9 @@ export const CurrentProxyCard = () => {
               labelId="proxy-select-label"
               value={state.selection.proxy}
               onChange={handleProxyChange}
+              open={isProxyMenuOpen}
+              onOpen={() => setIsProxyMenuOpen(true)}
+              onClose={() => setIsProxyMenuOpen(false)}
               label={t('home.components.currentProxy.labels.proxy')}
               disabled={isDirectMode}
               renderValue={renderProxyValue}
@@ -1051,45 +1064,44 @@ export const CurrentProxyCard = () => {
                 },
               }}
             >
-              {isDirectMode
-                ? null
-                : proxyOptions.map((proxy) => {
-                    const delayValue =
-                      state.proxyData.records[proxy.name] &&
-                      state.selection.group
-                        ? delayManager.getDelayFix(
-                            state.proxyData.records[proxy.name],
-                            state.selection.group,
-                          )
-                        : -1
-                    return (
-                      <MenuItem
-                        key={proxy.name}
-                        value={proxy.name}
+              {isProxyMenuOpen ? (
+                proxyOptions.map((proxy) => {
+                  const delayValue = proxy.delay ?? -1
+                  return (
+                    <MenuItem
+                      key={proxy.name}
+                      value={proxy.name}
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        width: '100%',
+                        pr: 1,
+                      }}
+                    >
+                      <Typography noWrap sx={{ flex: 1, mr: 1 }}>
+                        {proxy.name}
+                      </Typography>
+                      <Chip
+                        size="small"
+                        label={delayManager.formatDelay(delayValue)}
+                        color={convertDelayColor(delayValue)}
                         sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          width: '100%',
-                          pr: 1,
+                          minWidth: '60px',
+                          height: '22px',
+                          flexShrink: 0,
                         }}
-                      >
-                        <Typography noWrap sx={{ flex: 1, mr: 1 }}>
-                          {proxy.name}
-                        </Typography>
-                        <Chip
-                          size="small"
-                          label={delayManager.formatDelay(delayValue)}
-                          color={convertDelayColor(delayValue)}
-                          sx={{
-                            minWidth: '60px',
-                            height: '22px',
-                            flexShrink: 0,
-                          }}
-                        />
-                      </MenuItem>
-                    )
-                  })}
+                      />
+                    </MenuItem>
+                  )
+                })
+              ) : state.selection.proxy ? (
+                <MenuItem
+                  key="selected-proxy-placeholder"
+                  value={state.selection.proxy}
+                  sx={{ display: 'none' }}
+                />
+              ) : null}
             </Select>
           </FormControl>
         </Box>

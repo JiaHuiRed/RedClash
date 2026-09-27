@@ -6,7 +6,7 @@
 </h1>
 
 <p align="center">
-  <i>自用的 Clash 桌面客户端 · 红黑主题 · 仅Windows</i>
+  <i>自用的 Clash 客户端 · 红黑主题 · Windows / Android</i>
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
     <img src="https://img.shields.io/github/package-json/v/JiaHuiRed/RedClash?style=for-the-badge&color=green" alt="Release" />
   </a>
   <a href="https://github.com/JiaHuiRed/RedClash">
-    <img src="https://img.shields.io/badge/platform-Windows-0078D6?style=for-the-badge&logo=windows" alt="Platform" />
+    <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Android-0078D6?style=for-the-badge" alt="Platform: Windows and Android" />
   </a>
 </p>
 
@@ -42,7 +42,7 @@
 - 🎨 **4 套主题配色** — 红色 / 深蓝（默认）/ 护眼绿 / 米黄
 - 🌗 **明暗双模式** — 默认深色启动，支持浅色 / 深色 / 跟随系统
 - 🪟 **macOS 风格窗口** — 交通灯 group hover（✕/−/⤢ 符号）+ 毛玻璃标题栏（blur 28px），所有平台统一
-- 🪟 **Windows-only** — 精简掉 macOS / Linux 平台代码，专注 Windows
+- 🪟 **Windows + Android** — 支持 Windows 桌面端与 Android 移动端，Android 可开启 TUN 全机代理
 - 🖼️ **全新图标** — 黑猫冰淇淋（Jiang 系列）
 - ⚡ **保留核心功能** — 订阅管理、代理切换、规则配置、TUN 模式、备份、WebDAV
 - 🧹 **精简界面** — 只保留首页/代理/订阅/设置四个页面，移除连接/日志/规则/测试/解锁等低频页面

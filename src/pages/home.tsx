@@ -35,6 +35,7 @@ import { ProxyTunCard } from '@/components/home/proxy-tun-card'
 import { useProfiles } from '@/hooks/use-profiles'
 import { useVerge } from '@/hooks/use-verge'
 import { entry_lightweight_mode, openWebUrl } from '@/services/cmds'
+import getSystem from '@/utils/get-system'
 
 const LazyTestCard = lazy(() =>
   import('@/components/home/test-card').then((module) => ({
@@ -212,6 +213,7 @@ const HomePage = () => {
   const { t } = useTranslation()
   const { verge } = useVerge()
   const { current, mutateProfiles } = useProfiles()
+  const isAndroid = getSystem() === 'android'
 
   // 设置弹窗的状态
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -276,12 +278,12 @@ const HomePage = () => {
       if (!effectiveHomeCards[cardKey]) return null
 
       return (
-        <Grid size={size} key={cardKey}>
+        <Grid size={isAndroid ? 6 : size} key={cardKey}>
           {component}
         </Grid>
       )
     },
-    [effectiveHomeCards],
+    [effectiveHomeCards, isAndroid],
   )
 
   const criticalCards = useMemo(
@@ -393,7 +395,11 @@ const HomePage = () => {
         </Box>
       }
     >
-      <Grid container spacing={1.5} columns={{ xs: 6, sm: 6, md: 12 }}>
+      <Grid
+        container
+        spacing={1.5}
+        columns={isAndroid ? 6 : { xs: 6, sm: 6, md: 12 }}
+      >
         {criticalCards}
 
         {nonCriticalCards}
