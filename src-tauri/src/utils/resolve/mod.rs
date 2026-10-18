@@ -184,10 +184,7 @@ pub(super) async fn init_system_proxy() {
     // 核心没监听之前不要写系统代理：注册表会指向一个死端口，整机走系统代理
     // 的程序全部断网，而 UI 只提示"核心未运行"，用户无从定位。此时把上次
     // 的残留一并清掉——启动路径上 update_sysproxy 未必会跑。
-    if !sysopt
-        .wait_core_ready(constants::timing::CORE_READY_WAIT)
-        .await
-    {
+    if !sysopt.wait_core_ready(constants::timing::CORE_READY_WAIT).await {
         logging!(warn, Type::Setup, "核心未就绪，跳过系统代理设置并清理残留代理");
         logging_error!(Type::Setup, sysopt.reset_sysproxy().await);
         return;
