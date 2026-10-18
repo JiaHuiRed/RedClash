@@ -25,6 +25,10 @@ pub mod timing {
     pub const CONFIG_UPDATE_DEBOUNCE: Duration = Duration::from_millis(300);
     pub const STARTUP_ERROR_DELAY: Duration = Duration::from_secs(2);
 
+    /// 启动时等待核心在混合端口上监听的上限。
+    /// 期间不写系统代理，避免注册表指向未就绪的死端口。
+    pub const CORE_READY_WAIT: Duration = Duration::from_secs(10);
+
     #[cfg(target_os = "windows")]
     pub const SERVICE_WAIT_MAX: Duration = Duration::from_millis(3000);
     #[cfg(target_os = "windows")]

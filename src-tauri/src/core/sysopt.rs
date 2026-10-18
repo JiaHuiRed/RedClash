@@ -88,6 +88,15 @@ async fn get_bypass() -> String {
     }
 }
 
+/// 混合端口来源：用户配置优先，否则取运行时配置
+pub async fn resolve_mixed_port() -> u16 {
+    let verge = Config::verge().await.latest_arc();
+    match verge.verge_mixed_port {
+        Some(port) => port,
+        None => Config::clash().await.latest_arc().get_mixed_port(),
+    }
+}
+
 singleton!(Sysopt, SYSOPT);
 
 impl Sysopt {
@@ -139,15 +148,33 @@ impl Sysopt {
         let _ = self.update_lock.lock().await;
     }
 
+    /// 等待核心在混合端口上真正开始监听。
+    ///
+    /// 系统代理写入的就是 `host:mixed_port`，若核心没监听，所有走系统代理的
+    /// 程序会立刻断网，而 UI 只显示「核心未运行」，用户无法定位问题。
+    /// 常用于启动阶段：核心没起来时不写代理，并清掉上次残留。
+    pub async fn wait_core_ready(&self, timeout: Duration) -> bool {
+        let port = resolve_mixed_port().await;
+        let deadline = tokio::time::Instant::now() + timeout;
+
+        loop {
+            if tokio::net::TcpStream::connect(("127.0.0.1", port)).await.is_ok() {
+                return true;
+            }
+            let now = tokio::time::Instant::now();
+            if now >= deadline {
+                return false;
+            }
+            tokio::time::sleep(Duration::from_millis(200).min(deadline - now)).await;
+        }
+    }
+
     /// init the sysproxy
     pub async fn update_sysproxy(&self) -> Result<()> {
         let _lock = self.update_lock.lock().await;
 
         let verge = Config::verge().await.latest_arc();
-        let port = match verge.verge_mixed_port {
-            Some(port) => port,
-            None => Config::clash().await.latest_arc().get_mixed_port(),
-        };
+        let port = resolve_mixed_port().await;
         let pac_port = IVerge::get_singleton_port();
         // 先 await, 避免持有锁导致的 Send 问题
         let bypass = get_bypass().await;
