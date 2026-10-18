@@ -127,25 +127,23 @@ pub async fn test_delay(url: String) -> anyhow::Result<u32> {
         .to_string();
     let port = parsed.port().unwrap_or(if is_https { 443 } else { 80 });
 
+    // 始终优先走本地混合端口：核心在运行就一定监听在这里。
+    // 不能依赖 enable_system_proxy / enable_tun_mode —— 系统代理可能被外部软件改回直连，
+    // 那种情况下测试会静默退化成直连，把「节点可用」误判成「全部超时」。
     let verge = Config::verge().await.latest_arc();
-    let proxy_enabled = verge.enable_system_proxy.unwrap_or(false) || verge.enable_tun_mode.unwrap_or(false);
-    let proxy_port = if proxy_enabled {
-        Some(match verge.verge_mixed_port {
-            Some(p) => p,
-            None => Config::clash().await.data_arc().get_mixed_port(),
-        })
-    } else {
-        None
+    let mixed_port = match verge.verge_mixed_port {
+        Some(p) => p,
+        None => Config::clash().await.data_arc().get_mixed_port(),
     };
+    drop(verge);
 
     tokio::time::timeout(Duration::from_secs(10), async {
         let start = Instant::now();
         let mut buf = BytesMut::with_capacity(1024);
 
         if is_https {
-            let stream = match proxy_port {
-                Some(pp) => {
-                    let mut s = TcpStream::connect(format!("127.0.0.1:{pp}")).await?;
+            let stream = match TcpStream::connect(format!("127.0.0.1:{mixed_port}")).await {
+                Ok(mut s) => {
                     s.write_all(format!("CONNECT {host}:{port} HTTP/1.1\r\nHost: {host}:{port}\r\n\r\n").as_bytes())
                         .await?;
                     s.read_buf(&mut buf).await?;
@@ -154,7 +152,8 @@ pub async fn test_delay(url: String) -> anyhow::Result<u32> {
                     }
                     s
                 }
-                None => TcpStream::connect(format!("{host}:{port}")).await?,
+                // 只有核心没在跑（端口不通）才退回直连
+                Err(_) => TcpStream::connect(format!("{host}:{port}")).await?,
             };
             let connector = tokio_rustls::TlsConnector::from(Arc::clone(&TLS_CONFIG));
             let server_name = rustls::pki_types::ServerName::try_from(host.as_str())
@@ -162,17 +161,20 @@ pub async fn test_delay(url: String) -> anyhow::Result<u32> {
                 .to_owned();
             connector.connect(server_name, stream).await?;
         } else {
-            let (mut stream, req) = match proxy_port {
-                Some(pp) => (
-                    TcpStream::connect(format!("127.0.0.1:{pp}")).await?,
-                    format!("HEAD {url} HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n"),
-                ),
-                None => (
-                    TcpStream::connect(format!("{host}:{port}")).await?,
-                    format!("HEAD / HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n"),
-                ),
+            let mut stream = match TcpStream::connect(format!("127.0.0.1:{mixed_port}")).await {
+                Ok(mut s) => {
+                    s.write_all(format!("HEAD {url} HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n").as_bytes())
+                        .await?;
+                    s
+                }
+                // 只有核心没在跑（端口不通）才退回直连
+                Err(_) => {
+                    let mut s = TcpStream::connect(format!("{host}:{port}")).await?;
+                    s.write_all(format!("HEAD / HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n").as_bytes())
+                        .await?;
+                    s
+                }
             };
-            stream.write_all(req.as_bytes()).await?;
             let _ = stream.read(&mut buf).await?;
         }
 
