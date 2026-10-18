@@ -22,3 +22,10 @@ AGENTS.md
 
 # 项目记忆/工作区：本地保留，不入库
 .redcode/
+
+# 随手存放的截图/附件，不入库
+.attachments/
+
+# cargo 校验通过的标记文件与本地构建产物
+.cargo-ok
+**/android/build/
